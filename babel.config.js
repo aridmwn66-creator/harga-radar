@@ -1,4 +1,4 @@
-// Babel config for Expo SDK 57.
+// Babel config for Expo SDK 54.
 // babel-preset-expo already wires up expo-router and, when Reanimated 4 /
 // react-native-worklets are installed, injects react-native-worklets/plugin
 // automatically. So we intentionally do NOT add the worklets plugin by hand
