@@ -35,6 +35,9 @@ const ALIASES: Record<string, string> = {
 function expandAliases(query: string): string {
   return query
     .toLowerCase()
+    // Split a glued short-form from a trailing number so the alias map applies:
+    // "ip11" -> "ip 11" -> "iphone 11". Leaves "iphone11" and "vip..." untouched.
+    .replace(/\bip(?=\d)/g, 'ip ')
     .split(/\s+/)
     .map((tok) => (tok in ALIASES ? ALIASES[tok] : tok))
     .join(' ')

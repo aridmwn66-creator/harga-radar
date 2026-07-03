@@ -83,19 +83,29 @@ export default function ReportScreen() {
   const median = aggregate?.median ?? 0;
   const hasData = (aggregate?.count ?? 0) > 0;
 
+  // The full option universe for the filter sheet, WITHOUT the location filter,
+  // so selecting one location never hides the others. When no location is
+  // selected this shares a cache key with `query`, so it is not an extra fetch.
+  const universe = useReport({ modelId, storageGb, condition });
+  const universeListings = useMemo(
+    () => universe.data?.listings ?? listings,
+    [universe.data, listings],
+  );
+
   const visible = useMemo(
     () => applyClientFilters(listings, median, filters),
     [listings, median, filters],
   );
 
-  // Distinct locations + sources for the filter sheet, derived from the report.
+  // Distinct locations + sources for the filter sheet, from the (unfiltered)
+  // universe so the option lists stay stable as filters are applied.
   const locations = useMemo(
-    () => Array.from(new Set(listings.map((l) => l.location))).sort(),
-    [listings],
+    () => Array.from(new Set(universeListings.map((l) => l.location))).sort(),
+    [universeListings],
   );
   const sources = useMemo<SourceId[]>(
-    () => ALL_SOURCES.filter((s) => listings.some((l) => l.source === s)),
-    [listings],
+    () => ALL_SOURCES.filter((s) => universeListings.some((l) => l.source === s)),
+    [universeListings],
   );
 
   // Watchlist state for this exact model + variant + condition.

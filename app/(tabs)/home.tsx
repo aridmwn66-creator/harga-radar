@@ -3,7 +3,7 @@ import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import type { ModelSummary, ReportParams } from '@/types';
+import type { ModelSummary, ReportParams, WatchlistItem } from '@/types';
 import { colors, spacing } from '@/theme';
 import { hapticLight } from '@/lib/haptics';
 import { useSearch, useReports } from '@/query/hooks';
@@ -51,6 +51,8 @@ export default function HomeScreen() {
   );
   const snapshotReports = useReports(snapshotParams);
 
+  // Open a report from search / trending: default to the first storage variant
+  // and used condition (the common case for browsing).
   const openReport = useCallback(
     (model: ModelSummary, opts?: { storageGb?: number }) => {
       hapticLight();
@@ -62,6 +64,25 @@ export default function HomeScreen() {
           name: model.name,
           storageGb: storageGb != null ? String(storageGb) : '',
           condition: 'used',
+        },
+      });
+    },
+    [router],
+  );
+
+  // Open a report for a saved watchlist entry, preserving its EXACT variant
+  // (including "any" storage) and condition so the report resolves back to the
+  // same watchlist key and shows the tracked prices.
+  const openWatchItem = useCallback(
+    (item: WatchlistItem) => {
+      hapticLight();
+      router.push({
+        pathname: '/report/[modelId]',
+        params: {
+          modelId: item.modelId,
+          name: getModel(item.modelId)?.name ?? item.modelName,
+          storageGb: item.storageGb != null ? String(item.storageGb) : '',
+          condition: item.condition,
         },
       });
     },
@@ -160,7 +181,6 @@ export default function HomeScreen() {
                 <View style={styles.snapshot}>
                   {snapshotItems.map((item, i) => {
                     const result = snapshotReports[i];
-                    const model = getModel(item.modelId);
                     return (
                       <WatchlistCard
                         key={`${item.modelId}:${item.storageGb ?? 'any'}:${item.condition}`}
@@ -168,9 +188,7 @@ export default function HomeScreen() {
                         report={result?.data}
                         isLoading={result?.isLoading}
                         isError={result?.isError}
-                        onPress={() => {
-                          if (model) openReport(model, { storageGb: item.storageGb });
-                        }}
+                        onPress={() => openWatchItem(item)}
                       />
                     );
                   })}
