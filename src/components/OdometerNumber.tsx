@@ -1,12 +1,11 @@
 import { useEffect } from 'react';
 import { StyleSheet, TextInput, type TextInputProps, type TextStyle } from 'react-native';
 import Animated, {
-  Easing,
   useAnimatedProps,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { colors, tabularNums } from '@/theme';
+import { colors, durations, easing, reduceMotion, tabularNums } from '@/theme';
 import { formatIdr } from '@/lib/format';
 
 // Odometer-style rolling number. On mount (and whenever `value` changes) the
@@ -48,16 +47,19 @@ function formatPlainWorklet(n: number): string {
 export function OdometerNumber({
   value,
   kind = 'idr',
-  duration = 900,
+  duration = durations.odometer,
   style,
   accessibilityLabel,
 }: OdometerNumberProps) {
   const shown = useSharedValue(0);
 
   useEffect(() => {
+    // Roll up to the target and let it decelerate so the number "lands" softly
+    // instead of stopping dead. Honours the OS reduce-motion setting.
     shown.value = withTiming(value, {
       duration,
-      easing: Easing.out(Easing.cubic),
+      easing: easing.out,
+      reduceMotion,
     });
   }, [value, duration, shown]);
 

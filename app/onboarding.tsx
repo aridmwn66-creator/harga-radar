@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
-import { colors, radius, spacing } from '@/theme';
+import { colors, durations, easing, radius, reduceMotion, spacing } from '@/theme';
 import { hapticLight } from '@/lib/haptics';
 import { useSettingsStore } from '@/store/settings';
 import { AppText } from '@/components/ui/AppText';
@@ -32,11 +32,20 @@ export default function Onboarding() {
       </View>
 
       <View style={styles.body}>
-        <Animated.View entering={FadeIn.duration(500)} style={styles.badge}>
+        <Animated.View
+          entering={FadeIn.duration(durations.screen).easing(easing.out).reduceMotion(reduceMotion)}
+          style={styles.badge}
+        >
           <Icon name="radar" size={40} color="up" />
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.delay(120).duration(500)} style={styles.copy}>
+        <Animated.View
+          entering={FadeInDown.delay(140)
+            .duration(durations.screen)
+            .easing(easing.out)
+            .reduceMotion(reduceMotion)}
+          style={styles.copy}
+        >
           <AppText variant="overline" color="up">
             Harga Pasaran HP
           </AppText>
@@ -50,7 +59,13 @@ export default function Onboarding() {
         </Animated.View>
       </View>
 
-      <Animated.View entering={FadeInDown.delay(260).duration(500)} style={styles.footer}>
+      <Animated.View
+        entering={FadeInDown.delay(280)
+          .duration(durations.screen)
+          .easing(easing.out)
+          .reduceMotion(reduceMotion)}
+        style={styles.footer}
+      >
         <Button label="Mulai" onPress={start} />
         <AppText variant="caption" faint center style={styles.disclaimer}>
           Data contoh sudah termuat. Sambungkan backend kapan saja untuk harga live.

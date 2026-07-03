@@ -13,3 +13,10 @@ export {
   type SpacingToken,
   type RadiusToken,
 } from './spacing';
+export {
+  durations,
+  easing,
+  reduceMotion,
+  enterFade,
+  enterRise,
+} from './motion';

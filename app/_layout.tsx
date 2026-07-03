@@ -14,7 +14,7 @@ import { SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk/700Bold';
 import { Inter_400Regular } from '@expo-google-fonts/inter/400Regular';
 import { Inter_500Medium } from '@expo-google-fonts/inter/500Medium';
 import { Inter_600SemiBold } from '@expo-google-fonts/inter/600SemiBold';
-import { colors } from '@/theme';
+import { colors, durations } from '@/theme';
 import { queryClient } from '@/query/client';
 import { useSettingsStore } from '@/store/settings';
 
@@ -55,7 +55,11 @@ export default function RootLayout() {
           <Stack
             screenOptions={{
               headerShown: false,
+              // Soft fade + small vertical slide, unhurried and consistent.
+              // animationDuration tunes the iOS timing; Android uses its own
+              // matched fade-from-bottom curve.
               animation: 'fade_from_bottom',
+              animationDuration: durations.screen,
               contentStyle: { backgroundColor: colors.background },
             }}
           >

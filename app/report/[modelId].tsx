@@ -1,10 +1,11 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import type BottomSheet from '@gorhom/bottom-sheet';
 import type { Condition, Listing, SourceId } from '@/types';
-import { colors, spacing, textStyles } from '@/theme';
+import { colors, enterFade, spacing, textStyles } from '@/theme';
 import { conditionLabel, formatIdr, storageLabel } from '@/lib/format';
 import { sourceLabel } from '@/lib/sources';
 import { ALL_SOURCES } from '@/lib/sources';
@@ -329,33 +330,36 @@ export default function ReportScreen() {
 
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
-      <FlatList
-        data={visible}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <ListingRow listing={item} medianIdr={median} />}
-        ListHeaderComponent={header}
-        ItemSeparatorComponent={Divider}
-        ListEmptyComponent={
-          hasData ? (
-            <EmptyState
-              icon="filter"
-              title="Tidak ada listing yang cocok"
-              subtitle="Coba longgarkan filter buat lihat lebih banyak listing."
-              actionLabel="Reset filter"
-              onAction={resetFilters}
+      {/* Soft cross-fade from the loading skeleton into the real report. */}
+      <Animated.View style={styles.fill} entering={enterFade}>
+        <FlatList
+          data={visible}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <ListingRow listing={item} medianIdr={median} />}
+          ListHeaderComponent={header}
+          ItemSeparatorComponent={Divider}
+          ListEmptyComponent={
+            hasData ? (
+              <EmptyState
+                icon="filter"
+                title="Tidak ada listing yang cocok"
+                subtitle="Coba longgarkan filter buat lihat lebih banyak listing."
+                actionLabel="Reset filter"
+                onAction={resetFilters}
+              />
+            ) : null
+          }
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={query.isRefetching}
+              onRefresh={() => query.refetch()}
+              tintColor={colors.textMuted}
             />
-          ) : null
-        }
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={query.isRefetching}
-            onRefresh={() => query.refetch()}
-            tintColor={colors.textMuted}
-          />
-        }
-      />
+          }
+        />
+      </Animated.View>
 
       <FilterSheet
         ref={filterSheetRef}
@@ -418,6 +422,9 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  fill: {
+    flex: 1,
   },
   content: {
     paddingHorizontal: spacing.xl,

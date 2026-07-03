@@ -2,13 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
-  useAnimatedStyle,
+  useAnimatedProps,
+  useReducedMotion,
   useSharedValue,
   withTiming,
+  type SharedValue,
 } from 'react-native-reanimated';
-import Svg, { Circle, Line, Rect, Text as SvgText } from 'react-native-svg';
+import Svg, { Circle, G, Line, Rect, Text as SvgText } from 'react-native-svg';
 import type { Aggregate, Listing } from '@/types';
-import { colors, fonts } from '@/theme';
+import { colors, durations, fonts } from '@/theme';
 import { formatIdrCompact } from '@/lib/format';
 
 // The signature "market band". A custom vector distribution:
@@ -18,17 +20,21 @@ import { formatIdrCompact } from '@/lib/format';
 //   - a labeled vertical "Pasaran" (median) line
 //   - an optional dashed target-price marker (when the model is on the watchlist)
 //
-// The drawing itself is always fully rendered; the load animation is a plain
-// Animated.View "curtain" (matching the card surface) that slides off to the
-// right, revealing the band left-to-right. Using a View transform for the reveal
-// (instead of an animated SVG clip) keeps it rock-solid: if the animation ever
-// no-ops, the band is still fully visible rather than clipped to nothing.
+// Draw-in is SEQUENCED and calm: a single linear "clock" shared value drives the
+// whole thing, and each element eases itself off that clock. The axis + fair zone
+// draw first; then every dot fades and settles in one after another with a gentle,
+// capped stagger; the median line and labels ride in with the structure. Nothing
+// pops. Everything ends fully visible, and reduced-motion renders it static.
 //
 // NOTE: The spec suggested @shopify/react-native-skia. Skia is not bundled in
 // Expo Go, which conflicts with the "runs in Expo Go on first launch" hard
-// requirement, so this is drawn with react-native-svg instead. It is isolated in
-// this one component and can be reimplemented in Skia for a dev build without
-// touching any caller.
+// requirement, so this is drawn with react-native-svg. It is isolated in this one
+// component and can be reimplemented in Skia for a dev build without touching any
+// caller.
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+const AnimatedLine = Animated.createAnimatedComponent(Line);
+const AnimatedG = Animated.createAnimatedComponent(G);
 
 const H_PAD = 16;
 const BAND_TOP = 20;
@@ -55,7 +61,8 @@ export function MarketBand({
   height = 150,
 }: MarketBandProps) {
   const [width, setWidth] = useState(0);
-  const reveal = useSharedValue(0);
+  const reduced = useReducedMotion();
+  const clock = useSharedValue(reduced ? 1 : 0);
 
   const { median, p25, p75 } = aggregate;
 
@@ -74,14 +81,44 @@ export function MarketBand({
     [innerLeft, domainMin, span, innerWidth],
   );
 
-  useEffect(() => {
-    reveal.value = 0;
-    reveal.value = withTiming(1, { duration: 780, easing: Easing.out(Easing.cubic) });
-  }, [reveal, median, listings.length, width]);
+  // Timeline: axis phase, then a capped dot-stagger window, then the last dot's
+  // own fade. All expressed as fractions of one linear clock (0 -> 1).
+  const n = listings.length;
+  const dotWindowMs = Math.min(durations.bandDotWindowMax, n * durations.bandDotStagger);
+  const perDotMs = n > 0 ? dotWindowMs / n : 0;
+  const axisMs = durations.bandAxis;
+  const dotFadeMs = durations.bandDotFade;
+  const totalMs = axisMs + dotWindowMs + dotFadeMs;
+  const axisFrac = totalMs > 0 ? axisMs / totalMs : 1;
+  const structStartFrac = axisFrac * 0.35;
 
-  const curtainStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: reveal.value * width }],
-  }));
+  useEffect(() => {
+    if (reduced) {
+      clock.value = 1;
+      return;
+    }
+    clock.value = 0;
+    // Linear clock; each element applies its own ease-out so motion decelerates.
+    clock.value = withTiming(1, { duration: totalMs, easing: Easing.linear });
+  }, [clock, reduced, median, n, width, totalMs]);
+
+  // Axis draws in left-to-right via stroke dash offset.
+  const axisProps = useAnimatedProps(() => {
+    const p = Math.min(1, Math.max(0, clock.value / axisFrac));
+    const e = 1 - Math.pow(1 - p, 3);
+    return { strokeDashoffset: innerWidth * (1 - e) };
+  });
+
+  // Structure opacity (zone behind dots; median + labels in front). Same fade so
+  // they arrive together with the axis.
+  const structBackProps = useAnimatedProps(() => {
+    const denom = Math.max(0.0001, axisFrac - structStartFrac);
+    return { opacity: Math.min(1, Math.max(0, (clock.value - structStartFrac) / denom)) };
+  });
+  const structFrontProps = useAnimatedProps(() => {
+    const denom = Math.max(0.0001, axisFrac - structStartFrac);
+    return { opacity: Math.min(1, Math.max(0, (clock.value - structStartFrac) / denom)) };
+  });
 
   const onLayout = (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width);
 
@@ -91,13 +128,14 @@ export function MarketBand({
 
   const dotBandTop = BAND_TOP + 6;
   const dotBandBottom = baselineY - 8;
+  const medianX = scaleX(median);
 
   return (
     <View style={styles.container} onLayout={onLayout}>
       {width > 0 ? (
-        <View style={{ width, height }}>
-          <Svg width={width} height={height}>
-            {/* Interquartile "fair" zone. */}
+        <Svg width={width} height={height}>
+          {/* BACK structure: fair zone + axis (axis also draws via dash). */}
+          <AnimatedG animatedProps={structBackProps}>
             <Rect
               x={scaleX(p25)}
               y={BAND_TOP}
@@ -106,45 +144,46 @@ export function MarketBand({
               fill={colors.accentTint}
               rx={6}
             />
-
-            {/* Axis baseline. */}
-            <Line
+            <AnimatedLine
               x1={innerLeft}
               y1={baselineY}
               x2={innerRight}
               y2={baselineY}
               stroke={colors.hairline}
               strokeWidth={1}
+              strokeDasharray={Math.max(1, innerWidth)}
+              animatedProps={axisProps}
             />
+          </AnimatedG>
 
-            {/* Listing dots. */}
-            {listings.map((l) => {
-              const cx = scaleX(l.priceIdr);
-              const cy = dotBandBottom - jitter(l.id) * (dotBandBottom - dotBandTop);
-              const below = l.priceIdr < median;
-              return (
-                <Circle
-                  key={l.id}
-                  cx={cx}
-                  cy={cy}
-                  r={3.2}
-                  fill={below ? colors.up : colors.down}
-                  opacity={0.9}
-                />
-              );
-            })}
+          {/* Listing dots, each settling in on its own slice of the clock. */}
+          {listings.map((l, i) => {
+            const startMs = axisMs + i * perDotMs;
+            return (
+              <BandDot
+                key={l.id}
+                clock={clock}
+                cx={scaleX(l.priceIdr)}
+                cy={dotBandBottom - jitter(l.id) * (dotBandBottom - dotBandTop)}
+                fill={l.priceIdr < median ? colors.up : colors.down}
+                startFrac={startMs / totalMs}
+                endFrac={(startMs + dotFadeMs) / totalMs}
+              />
+            );
+          })}
 
-            {/* Median ("Pasaran") line + label. */}
+          {/* FRONT structure: median line + labels, painted over the dots. */}
+          <AnimatedG animatedProps={structFrontProps}>
             <Line
-              x1={scaleX(median)}
+              x1={medianX}
               y1={BAND_TOP - 6}
-              x2={scaleX(median)}
+              x2={medianX}
               y2={baselineY + 4}
               stroke={colors.text}
               strokeWidth={1.5}
             />
             <SvgText
-              x={clampLabel(scaleX(median), innerLeft, innerRight)}
+              x={clampLabel(medianX, innerLeft, innerRight)}
               y={BAND_TOP - 10}
               fill={colors.text}
               fontSize={10}
@@ -154,7 +193,6 @@ export function MarketBand({
               PASARAN
             </SvgText>
 
-            {/* Optional target marker (dashed). */}
             {targetPriceIdr != null ? (
               <>
                 <Line
@@ -179,7 +217,6 @@ export function MarketBand({
               </>
             ) : null}
 
-            {/* Min / max axis labels. */}
             <SvgText
               x={innerLeft}
               y={baselineY + 18}
@@ -200,17 +237,36 @@ export function MarketBand({
             >
               {formatIdrCompact(aggregate.max)}
             </SvgText>
-          </Svg>
-
-          {/* Reveal curtain: covers the band, then slides off to the right. */}
-          <Animated.View
-            pointerEvents="none"
-            style={[styles.curtain, { width, height }, curtainStyle]}
-          />
-        </View>
+          </AnimatedG>
+        </Svg>
       ) : null}
     </View>
   );
+}
+
+// A single dot that fades + gently grows into place over its slice of the clock.
+function BandDot({
+  clock,
+  cx,
+  cy,
+  fill,
+  startFrac,
+  endFrac,
+}: {
+  clock: SharedValue<number>;
+  cx: number;
+  cy: number;
+  fill: string;
+  startFrac: number;
+  endFrac: number;
+}) {
+  const animatedProps = useAnimatedProps(() => {
+    const denom = Math.max(0.0001, endFrac - startFrac);
+    const p = Math.min(1, Math.max(0, (clock.value - startFrac) / denom));
+    const e = 1 - Math.pow(1 - p, 3);
+    return { opacity: 0.9 * e, r: 2.4 + 0.8 * e };
+  });
+  return <AnimatedCircle animatedProps={animatedProps} cx={cx} cy={cy} fill={fill} />;
 }
 
 /** Keep a centered label from spilling past the drawing edges. */
@@ -221,11 +277,5 @@ function clampLabel(x: number, left: number, right: number): number {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-  },
-  curtain: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    backgroundColor: colors.surface,
   },
 });

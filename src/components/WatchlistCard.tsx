@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import type { PriceReport, WatchlistItem } from '@/types';
-import { colors, radius, spacing, textStyles } from '@/theme';
+import { colors, enterFade, radius, spacing, textStyles } from '@/theme';
 import {
   conditionLabel,
   formatIdr,
@@ -87,9 +88,11 @@ export function WatchlistCard({
               Gagal memuat
             </AppText>
           ) : (
-            <AppText style={[textStyles.numberLg, { fontSize: 26, lineHeight: 30 }]}>
-              {formatIdr(median)}
-            </AppText>
+            <Animated.View entering={enterFade}>
+              <AppText style={[textStyles.numberLg, { fontSize: 26, lineHeight: 30 }]}>
+                {formatIdr(median)}
+              </AppText>
+            </Animated.View>
           )}
         </View>
 

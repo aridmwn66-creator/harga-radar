@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 import { StyleSheet, type DimensionValue, type ViewStyle } from 'react-native';
 import Animated, {
-  Easing,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-import { colors, radius } from '@/theme';
+import { colors, durations, easing, radius } from '@/theme';
 
 // A pulsing placeholder block for loading states. Uses a single shared value so
 // many skeletons pulse together cheaply.
@@ -25,15 +25,19 @@ export function Skeleton({
   borderRadius = radius.sm,
   style,
 }: SkeletonProps) {
-  const pulse = useSharedValue(0.4);
+  const reduced = useReducedMotion();
+  // Rest at a clearly-visible opacity; when motion is allowed, pulse slowly
+  // between that and near-solid. When reduced, hold a steady mid opacity.
+  const pulse = useSharedValue(reduced ? 0.65 : 0.45);
 
   useEffect(() => {
+    if (reduced) return;
     pulse.value = withRepeat(
-      withTiming(0.9, { duration: 850, easing: Easing.inOut(Easing.ease) }),
+      withTiming(0.85, { duration: durations.shimmer, easing: easing.inOut }),
       -1,
       true,
     );
-  }, [pulse]);
+  }, [pulse, reduced]);
 
   const animatedStyle = useAnimatedStyle(() => ({ opacity: pulse.value }));
 

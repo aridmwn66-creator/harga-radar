@@ -2,9 +2,9 @@ import { useCallback, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import type { ModelSummary, ReportParams, WatchlistItem } from '@/types';
-import { colors, spacing } from '@/theme';
+import { colors, enterFade, spacing } from '@/theme';
 import { hapticLight } from '@/lib/haptics';
 import { useSearch, useReports } from '@/query/hooks';
 import { queryClient } from '@/query/client';
@@ -253,7 +253,7 @@ function SearchResultsSection({
     );
   }
   return (
-    <Animated.View entering={FadeIn.duration(200)}>
+    <Animated.View entering={enterFade}>
       <Card padded={false} style={styles.listCard}>
         {models.map((model, i) => (
           <View key={model.id}>

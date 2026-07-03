@@ -5,7 +5,7 @@ import Animated, {
   useDerivedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { colors, radius, spacing } from '@/theme';
+import { colors, durations, easing, radius, reduceMotion, spacing } from '@/theme';
 import { hapticSelection } from '@/lib/haptics';
 import { AppText } from './AppText';
 
@@ -34,7 +34,11 @@ export function SegmentedToggle<T extends string>({
   const segmentWidth = count > 0 ? trackWidth / count : 0;
 
   const translateX = useDerivedValue(() =>
-    withTiming(activeIndex * segmentWidth, { duration: 220 }),
+    withTiming(activeIndex * segmentWidth, {
+      duration: durations.micro,
+      easing: easing.inOut,
+      reduceMotion,
+    }),
   );
 
   const indicatorStyle = useAnimatedStyle(() => ({
