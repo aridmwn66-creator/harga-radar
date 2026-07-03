@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.hairline,
+    borderColor: colors.panelBorder,
   },
   input: {
     flex: 1,

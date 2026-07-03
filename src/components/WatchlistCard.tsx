@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import type { PriceReport, WatchlistItem } from '@/types';
-import { colors, enterFade, radius, spacing, textStyles } from '@/theme';
+import { colors, enterFade, radius, spacing, textGlow, textStyles } from '@/theme';
 import {
   conditionLabel,
   formatIdr,
@@ -14,6 +14,7 @@ import { AppText } from './ui/AppText';
 import { Pill } from './ui/Pill';
 import { Skeleton } from './ui/Skeleton';
 import { Icon } from './ui/Icon';
+import { StatusDot } from './ui/StatusDot';
 
 // A watchlist entry card: model, variant/condition, current harga pasaran, and
 // whether any listing is currently below the user's target. Used on Home
@@ -43,10 +44,12 @@ export function WatchlistCard({
   const belowTarget = countBelowTarget(listings, item.targetPriceIdr);
   const belowMedian = countBelowMedian(listings, median);
   const hasControls = !!onEdit || !!onRemove;
+  const alerting = belowTarget > 0;
 
   return (
     <Pressable onPress={onPress} accessibilityRole="button">
-      <Card>
+      {/* An armed alert (a listing under target) makes the whole panel glow. */}
+      <Card glow={alerting ? 'lime' : undefined} corners={alerting}>
         <View style={styles.header}>
           <View style={styles.titleWrap}>
             <AppText variant="heading" numberOfLines={1}>
@@ -89,7 +92,7 @@ export function WatchlistCard({
             </AppText>
           ) : (
             <Animated.View entering={enterFade}>
-              <AppText style={[textStyles.numberLg, { fontSize: 26, lineHeight: 30 }]}>
+              <AppText style={[textStyles.numberLg, styles.price]}>
                 {formatIdr(median)}
               </AppText>
             </Animated.View>
@@ -103,20 +106,19 @@ export function WatchlistCard({
             <View
               style={[
                 styles.indicator,
-                { backgroundColor: belowTarget > 0 ? colors.upTint : colors.surfaceRaised },
+                { backgroundColor: alerting ? colors.upTint : colors.surfaceRaised },
               ]}
             >
-              <View
-                style={[
-                  styles.dot,
-                  { backgroundColor: belowTarget > 0 ? colors.up : colors.textFaint },
-                ]}
+              <StatusDot
+                color={alerting ? colors.up : colors.textFaint}
+                size={6}
+                glow={alerting}
               />
               <AppText
                 variant="label"
-                style={{ color: belowTarget > 0 ? colors.up : colors.textMuted }}
+                style={{ color: alerting ? colors.up : colors.textMuted }}
               >
-                {belowTarget > 0
+                {alerting
                   ? `${belowTarget} di bawah target`
                   : `${belowMedian} di bawah pasaran`}
               </AppText>
@@ -163,6 +165,11 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     gap: 2,
   },
+  price: {
+    fontSize: 26,
+    lineHeight: 30,
+    ...textGlow.limeSoft,
+  },
   footer: {
     marginTop: spacing.lg,
     flexDirection: 'row',
@@ -172,14 +179,9 @@ const styles = StyleSheet.create({
   indicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
+    gap: spacing.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: 5,
     borderRadius: radius.pill,
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
   },
 });

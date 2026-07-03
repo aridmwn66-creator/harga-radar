@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import type BottomSheet from '@gorhom/bottom-sheet';
 import type { Condition, Listing, SourceId } from '@/types';
-import { colors, enterFade, spacing, textStyles } from '@/theme';
+import { colors, enterFade, spacing, textGlow, textStyles } from '@/theme';
 import { conditionLabel, formatIdr, storageLabel } from '@/lib/format';
 import { sourceLabel } from '@/lib/sources';
 import { ALL_SOURCES } from '@/lib/sources';
@@ -27,6 +27,8 @@ import { Button } from '@/components/ui/Button';
 import { Pill } from '@/components/ui/Pill';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Icon } from '@/components/ui/Icon';
+import { StatusDot } from '@/components/ui/StatusDot';
+import { NeonDivider } from '@/components/ui/NeonDivider';
 import { SegmentedToggle } from '@/components/ui/SegmentedToggle';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { OdometerNumber } from '@/components/OdometerNumber';
@@ -37,6 +39,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { FilterSheet } from '@/components/FilterSheet';
 import { TargetPriceEditor } from '@/components/TargetPriceEditor';
+import { TechBackground } from '@/components/TechBackground';
 
 const PRICE_POSITION_LABEL: Record<PricePosition, string> = {
   all: 'Semua',
@@ -178,6 +181,8 @@ export default function ReportScreen() {
         }
       />
 
+      <NeonDivider color={colors.cyan} maxOpacity={0.4} />
+
       {/* Variant (storage) selector. */}
       {model && model.availableStorageGb.length > 0 ? (
         <View style={styles.variantRow}>
@@ -203,8 +208,8 @@ export default function ReportScreen() {
         onChange={(c) => setCondition(c)}
       />
 
-      {/* Hero block. */}
-      <Card>
+      {/* Hero block: the single most important panel, so it glows + has corners. */}
+      <Card glow="lime" corners>
         <AppText variant="overline" muted>
           Harga Pasaran
         </AppText>
@@ -215,9 +220,12 @@ export default function ReportScreen() {
               <AppText variant="body" muted>
                 Rentang: {formatIdr(aggregate.min)} - {formatIdr(aggregate.max)}
               </AppText>
-              <AppText variant="label" color="up">
-                {aggregate.count} listing ditemukan
-              </AppText>
+              <View style={styles.countRow}>
+                <StatusDot color={colors.up} size={6} />
+                <AppText variant="label" color="up">
+                  {aggregate.count} listing ditemukan
+                </AppText>
+              </View>
             </View>
             <View style={styles.band}>
               <MarketBand aggregate={aggregate} listings={listings} targetPriceIdr={targetPriceIdr} />
@@ -330,6 +338,7 @@ export default function ReportScreen() {
 
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
+      <TechBackground />
       {/* Soft cross-fade from the loading skeleton into the real report. */}
       <Animated.View style={styles.fill} entering={enterFade}>
         <FlatList
@@ -442,11 +451,18 @@ const styles = StyleSheet.create({
   },
   hero: {
     ...textStyles.hero,
+    ...textGlow.lime,
     marginTop: spacing.sm,
   },
   heroMeta: {
     marginTop: spacing.sm,
-    gap: 2,
+    gap: spacing.xs,
+  },
+  countRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: 2,
   },
   heroEmpty: {
     marginTop: spacing.sm,

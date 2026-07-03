@@ -174,6 +174,17 @@ export function MarketBand({
 
           {/* FRONT structure: median line + labels, painted over the dots. */}
           <AnimatedG animatedProps={structFrontProps}>
+            {/* Lime glow halo behind the crisp median line. */}
+            <Line
+              x1={medianX}
+              y1={BAND_TOP - 8}
+              x2={medianX}
+              y2={baselineY + 6}
+              stroke={colors.up}
+              strokeWidth={5}
+              strokeLinecap="round"
+              opacity={0.18}
+            />
             <Line
               x1={medianX}
               y1={BAND_TOP - 6}
@@ -185,7 +196,7 @@ export function MarketBand({
             <SvgText
               x={clampLabel(medianX, innerLeft, innerRight)}
               y={BAND_TOP - 10}
-              fill={colors.text}
+              fill={colors.up}
               fontSize={10}
               fontFamily={fonts.bodySemiBold}
               textAnchor="middle"
@@ -195,19 +206,30 @@ export function MarketBand({
 
             {targetPriceIdr != null ? (
               <>
+                {/* Cyan glow halo behind the dashed target marker. */}
+                <Line
+                  x1={scaleX(targetPriceIdr)}
+                  y1={BAND_TOP - 8}
+                  x2={scaleX(targetPriceIdr)}
+                  y2={baselineY + 6}
+                  stroke={colors.cyan}
+                  strokeWidth={5}
+                  strokeLinecap="round"
+                  opacity={0.14}
+                />
                 <Line
                   x1={scaleX(targetPriceIdr)}
                   y1={BAND_TOP - 6}
                   x2={scaleX(targetPriceIdr)}
                   y2={baselineY + 4}
-                  stroke={colors.accent}
+                  stroke={colors.cyan}
                   strokeWidth={1.5}
                   strokeDasharray="4 4"
                 />
                 <SvgText
                   x={clampLabel(scaleX(targetPriceIdr), innerLeft, innerRight)}
                   y={baselineY + 26}
-                  fill={colors.accent}
+                  fill={colors.cyan}
                   fontSize={10}
                   fontFamily={fonts.bodySemiBold}
                   textAnchor="middle"

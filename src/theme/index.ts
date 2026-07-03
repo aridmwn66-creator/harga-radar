@@ -20,3 +20,4 @@ export {
   enterFade,
   enterRise,
 } from './motion';
+export { glow, textGlow } from './effects';

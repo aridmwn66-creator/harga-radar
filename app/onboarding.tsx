@@ -2,12 +2,13 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
-import { colors, durations, easing, radius, reduceMotion, spacing } from '@/theme';
+import { colors, durations, easing, glow, radius, reduceMotion, spacing, textGlow } from '@/theme';
 import { hapticLight } from '@/lib/haptics';
 import { useSettingsStore } from '@/store/settings';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
+import { TechBackground } from '@/components/TechBackground';
 
 // Single, skippable onboarding screen. One line explaining the app + "Mulai".
 
@@ -23,6 +24,7 @@ export default function Onboarding() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <TechBackground />
       <View style={styles.top}>
         <Pressable onPress={start} hitSlop={10} accessibilityRole="button">
           <AppText variant="label" muted>
@@ -49,7 +51,7 @@ export default function Onboarding() {
           <AppText variant="overline" color="up">
             Harga Pasaran HP
           </AppText>
-          <AppText variant="hero" style={styles.title}>
+          <AppText variant="hero" style={[styles.title, textGlow.lime]}>
             HargaRadar
           </AppText>
           <AppText variant="body" muted style={styles.tagline}>
@@ -97,9 +99,10 @@ const styles = StyleSheet.create({
     borderRadius: radius.xxl,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: colors.panel,
     borderWidth: 1,
-    borderColor: colors.hairline,
+    borderColor: colors.panelBorderActive,
+    ...glow.lime,
   },
   copy: {
     gap: spacing.md,

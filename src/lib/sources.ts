@@ -14,42 +14,18 @@ export type SourceMeta = {
   color: string;
 };
 
+// Monochrome, HUD-style badges: identity is carried by the label/short mark, not
+// by color, so the palette stays disciplined (cool grays only). A uniform tint +
+// muted text keeps them quiet next to the two neon accents.
+const BADGE_TINT = 'rgba(255,255,255,0.05)';
+const BADGE_COLOR = '#9CA3AC';
+
 export const SOURCE_META: Record<SourceId, SourceMeta> = {
-  olx: {
-    id: 'olx',
-    label: 'OLX',
-    short: 'OLX',
-    tint: 'rgba(0,163,224,0.14)',
-    color: '#3FC5F0',
-  },
-  facebook: {
-    id: 'facebook',
-    label: 'FB Marketplace',
-    short: 'FB',
-    tint: 'rgba(91,140,255,0.14)',
-    color: '#6E9BFF',
-  },
-  tokopedia: {
-    id: 'tokopedia',
-    label: 'Tokopedia',
-    short: 'TP',
-    tint: 'rgba(66,184,131,0.14)',
-    color: '#5FD39B',
-  },
-  shopee: {
-    id: 'shopee',
-    label: 'Shopee',
-    short: 'SP',
-    tint: 'rgba(255,122,59,0.14)',
-    color: '#FF9761',
-  },
-  carousell: {
-    id: 'carousell',
-    label: 'Carousell',
-    short: 'CR',
-    tint: 'rgba(255,72,72,0.14)',
-    color: '#FF7A7A',
-  },
+  olx: { id: 'olx', label: 'OLX', short: 'OLX', tint: BADGE_TINT, color: BADGE_COLOR },
+  facebook: { id: 'facebook', label: 'FB Marketplace', short: 'FB', tint: BADGE_TINT, color: BADGE_COLOR },
+  tokopedia: { id: 'tokopedia', label: 'Tokopedia', short: 'TP', tint: BADGE_TINT, color: BADGE_COLOR },
+  shopee: { id: 'shopee', label: 'Shopee', short: 'SP', tint: BADGE_TINT, color: BADGE_COLOR },
+  carousell: { id: 'carousell', label: 'Carousell', short: 'CR', tint: BADGE_TINT, color: BADGE_COLOR },
 };
 
 export const ALL_SOURCES: SourceId[] = [

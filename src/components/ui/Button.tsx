@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
-import { colors, MIN_TAP_TARGET, radius, spacing } from '@/theme';
+import { colors, glow, MIN_TAP_TARGET, radius, spacing } from '@/theme';
 import { hapticLight } from '@/lib/haptics';
 import { AppText } from './AppText';
 
@@ -98,6 +98,8 @@ const styles = StyleSheet.create({
 const VARIANT_STYLES: Record<Variant, ViewStyle> = {
   primary: {
     backgroundColor: colors.up,
+    // Soft lime bloom around the primary action.
+    ...glow.lime,
   },
   secondary: {
     backgroundColor: colors.surfaceRaised,

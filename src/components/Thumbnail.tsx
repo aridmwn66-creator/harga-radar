@@ -1,14 +1,15 @@
 import { StyleSheet, View } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
 import { colors, radius } from '@/theme';
-import { brandAccent, brandMonogram } from '@/lib/brands';
+import { brandMonogram } from '@/lib/brands';
 import { AppText } from './ui/AppText';
 
 // Placeholder device thumbnail. We deliberately avoid remote images so the app
-// works fully offline in Expo Go and never shows a broken image. A brand-tinted
-// tile with a subtle phone silhouette and the brand monogram reads as a device
-// without any network dependency. The live API can supply real thumbnailUrls
-// later; ListingRow/ModelRow would just render an <Image> when one is present.
+// works fully offline in Expo Go and never shows a broken image. A cool
+// monochrome tile with a phone silhouette + brand monogram reads as a device
+// without any network dependency, and keeps the palette disciplined (the cyan
+// frame is the only accent). The live API can supply real thumbnailUrls later;
+// ListingRow/ModelRow would just render an <Image> when one is present.
 
 type ThumbnailProps = {
   brand: string;
@@ -16,7 +17,6 @@ type ThumbnailProps = {
 };
 
 export function Thumbnail({ brand, size = 48 }: ThumbnailProps) {
-  const accent = brandAccent(brand);
   const frameW = size * 0.42;
   const frameH = size * 0.66;
   return (
@@ -38,13 +38,13 @@ export function Thumbnail({ brand, size = 48 }: ThumbnailProps) {
           width={frameW}
           height={frameH}
           rx={frameW * 0.18}
-          stroke={accent}
+          stroke={colors.cyan}
           strokeWidth={1.5}
           fill="none"
-          opacity={0.35}
+          opacity={0.28}
         />
       </Svg>
-      <AppText variant="heading" style={{ color: accent }}>
+      <AppText variant="heading" style={{ color: colors.textMuted }}>
         {brandMonogram(brand)}
       </AppText>
     </View>

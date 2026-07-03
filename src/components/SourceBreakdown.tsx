@@ -4,7 +4,6 @@ import { colors, radius, spacing, textStyles } from '@/theme';
 import { formatIdr } from '@/lib/format';
 import { AppText } from './ui/AppText';
 import { SourceBadge } from './ui/SourceBadge';
-import { sourceMeta } from '@/lib/sources';
 
 // "Per marketplace" breakdown. For each source: a badge, its listing count with
 // a proportional bar, and its own median price.
@@ -36,7 +35,7 @@ export function SourceBreakdown({ bySource }: SourceBreakdownProps) {
                   <View
                     style={[
                       styles.fill,
-                      { width: `${Math.max(6, fraction * 100)}%`, backgroundColor: sourceMeta(s.source).color },
+                      { width: `${Math.max(6, fraction * 100)}%`, backgroundColor: colors.cyan },
                     ]}
                   />
                 </View>

@@ -14,6 +14,8 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { WatchlistCard } from '@/components/WatchlistCard';
 import { EmptyState } from '@/components/EmptyState';
 import { TargetPriceEditor } from '@/components/TargetPriceEditor';
+import { NeonDivider } from '@/components/ui/NeonDivider';
+import { TechBackground } from '@/components/TechBackground';
 
 export default function WatchlistScreen() {
   const router = useRouter();
@@ -59,8 +61,10 @@ export default function WatchlistScreen() {
 
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
+      <TechBackground />
       <View style={styles.header}>
         <ScreenHeader title="Watchlist" eyebrow={`${items.length} model dipantau`} />
+        <NeonDivider color={colors.cyan} maxOpacity={0.35} style={styles.headerRule} />
       </View>
 
       {items.length === 0 ? (
@@ -136,6 +140,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.sm,
     paddingBottom: spacing.lg,
+  },
+  headerRule: {
+    marginTop: spacing.lg,
   },
   content: {
     paddingHorizontal: spacing.xl,

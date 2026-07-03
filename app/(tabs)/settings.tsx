@@ -10,6 +10,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { SegmentedToggle } from '@/components/ui/SegmentedToggle';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { NeonDivider } from '@/components/ui/NeonDivider';
+import { TechBackground } from '@/components/TechBackground';
 
 export default function SettingsScreen() {
   const dataSource = useSettingsStore((s) => s.dataSource);
@@ -22,8 +24,10 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
+      <TechBackground />
       <View style={styles.header}>
         <ScreenHeader title="Setelan" eyebrow="Preferensi & data" />
+        <NeonDivider color={colors.cyan} maxOpacity={0.35} style={styles.headerRule} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -120,6 +124,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.sm,
     paddingBottom: spacing.lg,
+  },
+  headerRule: {
+    marginTop: spacing.lg,
   },
   content: {
     paddingHorizontal: spacing.xl,

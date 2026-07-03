@@ -16,6 +16,9 @@ import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Icon } from '@/components/ui/Icon';
+import { StatusDot } from '@/components/ui/StatusDot';
+import { NeonDivider } from '@/components/ui/NeonDivider';
+import { TechBackground } from '@/components/TechBackground';
 import { SearchBar } from '@/components/SearchBar';
 import { ModelRow } from '@/components/ModelRow';
 import { WatchlistCard } from '@/components/WatchlistCard';
@@ -104,6 +107,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
+      <TechBackground />
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.content}
@@ -112,9 +116,20 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.textMuted} />
         }
       >
-        <View style={styles.brand}>
-          <Icon name="radar" size={22} color="up" />
-          <AppText variant="heading">HargaRadar</AppText>
+        <View style={styles.header}>
+          <View style={styles.brandRow}>
+            <View style={styles.brandLeft}>
+              <Icon name="radar" size={22} color="up" />
+              <AppText variant="heading">HargaRadar</AppText>
+            </View>
+            <View style={styles.brandStatus}>
+              <StatusDot color={colors.cyan} size={6} />
+              <AppText variant="overline" faint>
+                Indeks Harga
+              </AppText>
+            </View>
+          </View>
+          <NeonDivider color={colors.cyan} maxOpacity={0.35} />
         </View>
 
         <SearchBar
@@ -301,10 +316,23 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.huge,
     gap: spacing.xxl,
   },
-  brand: {
+  header: {
+    gap: spacing.md,
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  brandLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+  },
+  brandStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
   },
   section: {
     gap: spacing.md,
