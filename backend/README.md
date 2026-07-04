@@ -135,9 +135,29 @@ what the flag adds.
   wrong model, wrong storage/condition, and extreme price outliers (a median
   band that always runs, plus an IQR fence when there are enough points).
 - Used vs new are separated by the `condition` query param, so OLX/Carousell/FB
-  (mostly used) and Tokopedia/Shopee (mostly new) aggregate correctly.
+  (mostly used) and Tokopedia/Shopee (mostly new) aggregate correctly. New
+  listings are never discarded as invalid: they are classified and returned when
+  you ask for `condition=new`. In the app this is the "Baru" toggle on the report
+  screen, where Tokopedia shows up as the new-price ("harga baru") source in
+  `bySource`. Because new and used are different markets, mixing them into one
+  median would corrupt the used "harga pasaran", so each condition is its own
+  report. Outlier removal also runs per condition, so a higher new price is never
+  culled as an outlier of a used-dominated distribution (and vice versa).
 - Aggregates: median (harga pasaran), mean, p25, p75, min, max, count, and a
   per-source median (`bySource`).
+
+Normalization logs a per-source funnel at info level so you can see exactly why
+a source that scraped fine contributes nothing after filtering, for example:
+
+```
+[normalize] iphone-11 cond=used store=any loc=any | olx: in=35 kept=18 drops{junk=6,model_mismatch=7,duplicate=4} | tokopedia: in=40 kept=0 drops{junk=2,wrong_condition=38} | total kept=18
+```
+
+Here Tokopedia scraped 40 listings but contributed 0 to a `used` request because
+38 of them are NEW units (`wrong_condition`); they appear when you request
+`condition=new`. Drop reasons: `empty_title`, `junk`, `bad_price`,
+`model_mismatch`, `wrong_storage`, `wrong_condition`, `wrong_location`,
+`duplicate`, `outlier`.
 
 ## Facebook Marketplace (read before enabling)
 
