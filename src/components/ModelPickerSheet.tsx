@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useMemo, useState } from 'react';
+import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -9,13 +9,15 @@ import BottomSheet, {
 import type { ModelSummary } from '@/types';
 import { colors, fonts, radius, spacing } from '@/theme';
 import { MODELS } from '@/data/fixtures/models';
+import type { SheetHandle } from './ui/sheet';
 import { AppText } from './ui/AppText';
 import { ModelRow } from './ModelRow';
 import { Icon } from './ui/Icon';
 
 // A reusable bottom sheet for picking a model from the full catalog. Used by the
-// Compare and Alerts screens. Parent owns the ref (present/dismiss) and handles
-// selection.
+// Compare and Alerts screens. Parent owns the ref (expand/close) and handles
+// selection. A web fallback (ModelPickerSheet.web.tsx) shows the same list in a
+// plain modal.
 
 function normalize(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '');
@@ -27,10 +29,20 @@ type ModelPickerSheetProps = {
   onSelect: (model: ModelSummary) => void;
 };
 
-export const ModelPickerSheet = forwardRef<BottomSheet, ModelPickerSheetProps>(
+export const ModelPickerSheet = forwardRef<SheetHandle, ModelPickerSheetProps>(
   function ModelPickerSheet({ title = 'Pilih model', excludeIds = [], onSelect }, ref) {
     const [query, setQuery] = useState('');
+    const sheetRef = useRef<BottomSheet>(null);
     const snapPoints = useMemo(() => ['85%'], []);
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        expand: () => sheetRef.current?.expand(),
+        close: () => sheetRef.current?.close(),
+      }),
+      [],
+    );
 
     const renderBackdrop = useCallback(
       (props: BottomSheetBackdropProps) => (
@@ -50,7 +62,7 @@ export const ModelPickerSheet = forwardRef<BottomSheet, ModelPickerSheetProps>(
 
     return (
       <BottomSheet
-        ref={ref}
+        ref={sheetRef}
         index={-1}
         snapPoints={snapPoints}
         enablePanDownToClose

@@ -3,7 +3,6 @@ import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import type BottomSheet from '@gorhom/bottom-sheet';
 import type { Condition, SourceId } from '@/types';
 import { colors, enterFade, spacing, textGlow, textStyles } from '@/theme';
 import { conditionLabel, formatIdr, formatIdrCompact, storageLabel } from '@/lib/format';
@@ -40,6 +39,7 @@ import { ListingRow } from '@/components/ListingRow';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { FilterSheet } from '@/components/FilterSheet';
+import type { SheetHandle } from '@/components/ui/sheet';
 import { TargetPriceEditor } from '@/components/TargetPriceEditor';
 import { TechBackground } from '@/components/TechBackground';
 
@@ -68,7 +68,7 @@ export default function ReportScreen() {
   // Client-side list filters.
   const [filters, setFilters] = useState<ReportFilters>(DEFAULT_FILTERS);
 
-  const filterSheetRef = useRef<BottomSheet>(null);
+  const filterSheetRef = useRef<SheetHandle>(null);
   const [editorOpen, setEditorOpen] = useState(false);
 
   const query = useReport({

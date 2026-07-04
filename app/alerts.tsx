@@ -2,7 +2,6 @@ import { useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import type BottomSheet from '@gorhom/bottom-sheet';
 import type { ModelSummary, ReportParams } from '@/types';
 import { colors, radius, spacing } from '@/theme';
 import { conditionLabel, formatIdr, formatIdrCompact } from '@/lib/format';
@@ -20,6 +19,7 @@ import { NeonDivider } from '@/components/ui/NeonDivider';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { EmptyState } from '@/components/EmptyState';
 import { ModelPickerSheet } from '@/components/ModelPickerSheet';
+import type { SheetHandle } from '@/components/ui/sheet';
 import { TargetPriceEditor } from '@/components/TargetPriceEditor';
 import { TechBackground } from '@/components/TechBackground';
 
@@ -29,7 +29,7 @@ import { TechBackground } from '@/components/TechBackground';
 
 export default function AlertsScreen() {
   const router = useRouter();
-  const pickerRef = useRef<BottomSheet>(null);
+  const pickerRef = useRef<SheetHandle>(null);
   const alerts = useAlertsStore((s) => s.alerts);
   const add = useAlertsStore((s) => s.add);
   const remove = useAlertsStore((s) => s.remove);

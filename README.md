@@ -30,6 +30,60 @@ Handy scripts:
 - `npx expo export --platform ios` - produce a production JS bundle (used here
   as a headless smoke test that the whole app bundles and transforms).
 
+## Deploy as a static website (free, works on every browser)
+
+The app also exports to a plain static website (a single-page app) that runs in
+any browser, including Safari on iPhone. No backend is required: with no
+`EXPO_PUBLIC_API_URL` set (or an unreachable one) it serves the bundled sample
+data, so the site opens and works out of the box.
+
+Build it:
+
+```bash
+npx expo export --platform web
+```
+
+This writes a complete website to `dist/` (configured via `web.output: "single"`
+in `app.json`). It includes `dist/_redirects` (copied from `public/`) so
+client-side routes keep working when a deep link is opened or a page is refreshed
+on Netlify.
+
+Deploy with Netlify Drop (no account, no CLI, drag and drop):
+
+1. Run `npx expo export --platform web` to produce `dist/`.
+2. Open https://app.netlify.com/drop in your browser.
+3. Drag the whole `dist/` folder onto the page. Netlify gives you a public URL
+   in a few seconds. Open it on any phone or computer.
+
+The same `dist/` folder works on any static host (GitHub Pages, Cloudflare Pages,
+Vercel, a plain web server). On hosts other than Netlify, configure a SPA
+fallback so every path serves `index.html` (Netlify reads `_redirects`
+automatically; the rule is `/*  /index.html  200`).
+
+To point the website at the live backend instead of the sample data, set the URL
+at build time and switch the source to `Live` in Setelan:
+
+```bash
+EXPO_PUBLIC_API_URL=https://your-backend.example.com npx expo export --platform web
+```
+
+If the backend is unreachable, the site falls back to the sample data instead of
+erroring.
+
+### Web fallbacks
+
+A few components use native gesture/sheet libraries that do not behave well in a
+browser. Each has a web variant (`*.web.tsx`) the bundler picks up automatically,
+so no screen ever crashes or goes blank on web:
+
+- Filter panel and the compare/alerts model picker: the `@gorhom/bottom-sheet`
+  panels become plain modal overlays (`FilterSheet.web.tsx`,
+  `ModelPickerSheet.web.tsx`).
+- The dual-thumb price range slider becomes two standard HTML range inputs
+  (`RangeSlider.web.tsx`).
+
+The market band still renders as SVG (`react-native-svg`) on web.
+
 ## Switching from mock data to a live backend
 
 A real scraping backend lives in [`backend/`](./backend) (Node + Fastify +

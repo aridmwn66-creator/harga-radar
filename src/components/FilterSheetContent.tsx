@@ -1,0 +1,202 @@
+import type { ReactNode } from 'react';
+import { StyleSheet, View } from 'react-native';
+import type { Condition, SourceId } from '@/types';
+import { spacing } from '@/theme';
+import { formatIdrCompact, storageLabel } from '@/lib/format';
+import { sourceLabel } from '@/lib/sources';
+import type { ReportFilters } from '@/features/report/filters';
+import { AppText } from './ui/AppText';
+import { Chip } from './ui/Chip';
+import { Button } from './ui/Button';
+import { SegmentedToggle } from './ui/SegmentedToggle';
+import { RangeSlider } from './ui/RangeSlider';
+
+// The filter panel body, shared by the native bottom sheet (FilterSheet.tsx) and
+// the web modal fallback (FilterSheet.web.tsx). Keeping it in one place means the
+// filters (kondisi, storage, rentang harga, lokasi, marketplace) stay identical
+// on every platform. RangeSlider resolves to its gesture version on native and
+// its HTML-input version on web automatically.
+
+export type FilterSheetContentProps = {
+  storageOptions: number[];
+  storageGb?: number;
+  onStorageChange: (gb: number | undefined) => void;
+  condition: Condition;
+  onConditionChange: (c: Condition) => void;
+  location: string | null;
+  onLocationChange: (loc: string | null) => void;
+  locations: string[];
+  filters: ReportFilters;
+  onFiltersChange: (f: ReportFilters) => void;
+  sources: SourceId[];
+  /** Price domain for the range slider (full min/max of the current report). */
+  priceDomainMin: number;
+  priceDomainMax: number;
+  onReset: () => void;
+  onClose: () => void;
+};
+
+export function FilterSheetContent({
+  storageOptions,
+  storageGb,
+  onStorageChange,
+  condition,
+  onConditionChange,
+  location,
+  onLocationChange,
+  locations,
+  filters,
+  onFiltersChange,
+  sources,
+  priceDomainMin,
+  priceDomainMax,
+  onReset,
+  onClose,
+}: FilterSheetContentProps) {
+  const low = filters.priceMin ?? priceDomainMin;
+  const high = filters.priceMax ?? priceDomainMax;
+
+  const onPriceChange = (nextLow: number, nextHigh: number) => {
+    onFiltersChange({
+      ...filters,
+      priceMin: nextLow <= priceDomainMin ? null : nextLow,
+      priceMax: nextHigh >= priceDomainMax ? null : nextHigh,
+    });
+  };
+
+  return (
+    <View style={styles.content}>
+      <AppText variant="title">Filter</AppText>
+
+      <Section title="Kondisi">
+        <SegmentedToggle<Condition>
+          options={[
+            { value: 'used', label: 'Bekas' },
+            { value: 'new', label: 'Baru' },
+          ]}
+          value={condition}
+          onChange={onConditionChange}
+        />
+      </Section>
+
+      <Section title="Storage">
+        <View style={styles.chipRow}>
+          <Chip
+            label="Semua"
+            selected={storageGb == null}
+            onPress={() => onStorageChange(undefined)}
+          />
+          {storageOptions.map((gb) => (
+            <Chip
+              key={gb}
+              label={storageLabel(gb)}
+              selected={storageGb === gb}
+              onPress={() => onStorageChange(gb)}
+            />
+          ))}
+        </View>
+      </Section>
+
+      <Section title="Rentang harga">
+        <View style={styles.priceHead}>
+          <AppText variant="number" color="up">
+            {formatIdrCompact(low)}
+          </AppText>
+          <AppText variant="number" color="up">
+            {formatIdrCompact(high)}
+          </AppText>
+        </View>
+        {priceDomainMax > priceDomainMin ? (
+          <RangeSlider
+            min={priceDomainMin}
+            max={priceDomainMax}
+            low={low}
+            high={high}
+            onChange={onPriceChange}
+          />
+        ) : null}
+      </Section>
+
+      <Section title="Lokasi">
+        <View style={styles.chipRow}>
+          <Chip
+            label="Semua lokasi"
+            selected={location == null}
+            onPress={() => onLocationChange(null)}
+          />
+          {locations.map((loc) => (
+            <Chip
+              key={loc}
+              label={loc}
+              selected={location === loc}
+              onPress={() => onLocationChange(loc)}
+            />
+          ))}
+        </View>
+      </Section>
+
+      <Section title="Marketplace">
+        <View style={styles.chipRow}>
+          <Chip
+            label="Semua"
+            selected={filters.source == null}
+            onPress={() => onFiltersChange({ ...filters, source: null })}
+          />
+          {sources.map((s) => (
+            <Chip
+              key={s}
+              label={sourceLabel(s)}
+              selected={filters.source === s}
+              onPress={() => onFiltersChange({ ...filters, source: s })}
+            />
+          ))}
+        </View>
+      </Section>
+
+      <View style={styles.footer}>
+        <Button label="Reset" variant="ghost" fullWidth={false} onPress={onReset} haptics={false} />
+        <Button label="Terapkan" variant="primary" onPress={onClose} style={styles.apply} />
+      </View>
+    </View>
+  );
+}
+
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <View style={styles.section}>
+      <AppText variant="overline" muted>
+        {title}
+      </AppText>
+      {children}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  content: {
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.huge,
+    gap: spacing.xl,
+  },
+  section: {
+    gap: spacing.md,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  priceHead: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginTop: spacing.sm,
+  },
+  apply: {
+    flex: 1,
+  },
+});

@@ -2,7 +2,6 @@ import { useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import type BottomSheet from '@gorhom/bottom-sheet';
 import type { ModelSummary, PriceReport } from '@/types';
 import { colors, radius, spacing, textGlow, textStyles } from '@/theme';
 import { formatIdr, formatIdrCompact } from '@/lib/format';
@@ -15,6 +14,7 @@ import { NeonDivider } from '@/components/ui/NeonDivider';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Thumbnail } from '@/components/Thumbnail';
 import { ModelPickerSheet } from '@/components/ModelPickerSheet';
+import type { SheetHandle } from '@/components/ui/sheet';
 import { TechBackground } from '@/components/TechBackground';
 
 // Compare two models side by side: harga pasaran, price range, listing count,
@@ -22,7 +22,7 @@ import { TechBackground } from '@/components/TechBackground';
 
 export default function CompareScreen() {
   const router = useRouter();
-  const pickerRef = useRef<BottomSheet>(null);
+  const pickerRef = useRef<SheetHandle>(null);
   const [slot, setSlot] = useState<'a' | 'b'>('a');
   const [modelA, setModelA] = useState<ModelSummary | null>(null);
   const [modelB, setModelB] = useState<ModelSummary | null>(null);
