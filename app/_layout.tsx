@@ -67,6 +67,11 @@ export default function RootLayout() {
             <Stack.Screen name="onboarding" />
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="report/[modelId]" />
+            <Stack.Screen name="listing/[id]" />
+            <Stack.Screen name="catalog" />
+            <Stack.Screen name="compare" />
+            <Stack.Screen name="budget" />
+            <Stack.Screen name="alerts" />
           </Stack>
         </QueryClientProvider>
       </SafeAreaProvider>

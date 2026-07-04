@@ -43,6 +43,10 @@ export default function TabsLayout() {
         options={{ title: 'Watchlist', tabBarIcon: tabIcon('bookmark') }}
       />
       <Tabs.Screen
+        name="tools"
+        options={{ title: 'Alat', tabBarIcon: tabIcon('grid') }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{ title: 'Setelan', tabBarIcon: tabIcon('sliders') }}
       />

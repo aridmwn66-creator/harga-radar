@@ -163,7 +163,10 @@ export default function HomeScreen() {
               </Section>
             ) : null}
 
-            <Section title="Trending">
+            <Section
+              title="Trending"
+              action={<Chip label="Lihat Semua" onPress={() => router.push('/catalog')} />}
+            >
               <Card padded={false} style={styles.listCard}>
                 {TRENDING_MODELS.map((model, i) => (
                   <View key={model.id}>

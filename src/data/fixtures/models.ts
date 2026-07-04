@@ -453,7 +453,13 @@ export const TRENDING_MODEL_IDS: string[] = [
   "iphone-15",
   "poco-x6",
   "samsung-galaxy-s24",
-  "oppo-reno-11"
+  "oppo-reno-11",
+  "iphone-17-pro-max",
+  "vivo-v30",
+  "samsung-galaxy-a15",
+  "infinix-note-40",
+  "iphone-14",
+  "tecno-spark-20"
 ];
 
 const BY_ID: Record<string, ModelSummary> = Object.fromEntries(

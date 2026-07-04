@@ -1,4 +1,5 @@
-import { Linking, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import type { Listing } from '@/types';
 import { colors, spacing, textStyles } from '@/theme';
 import { conditionLabel, formatIdr, formatRelativeTime } from '@/lib/format';
@@ -11,8 +12,9 @@ import { DealTag } from './ui/DealTag';
 import { Icon } from './ui/Icon';
 import { getModel } from '@/data/fixtures/models';
 
-// A single marketplace listing. Tapping opens the original listing URL. Price is
-// tinted acid-lime and flagged when it sits below the market median.
+// A single marketplace listing. Tapping opens the full listing detail screen
+// (which has the "Buka di Marketplace" link). Price is tinted acid-lime and
+// flagged when it sits below the market median.
 
 type ListingRowProps = {
   listing: Listing;
@@ -21,17 +23,19 @@ type ListingRowProps = {
 };
 
 export function ListingRow({ listing, medianIdr, nowMs }: ListingRowProps) {
+  const router = useRouter();
   const deal = isDeal(listing.priceIdr, medianIdr);
   const score = dealScore(listing.priceIdr, medianIdr);
   const brand = getModel(listing.modelId)?.brand ?? 'Apple';
 
-  const openListing = async () => {
+  const openDetail = () => {
     hapticLight();
-    try {
-      await Linking.openURL(listing.url);
-    } catch {
-      /* if the deep link cannot open we simply do nothing */
-    }
+    // Pass the listing (and the market median for the deal score) as params so
+    // the detail screen is self-contained and works for both mock and live data.
+    router.push({
+      pathname: '/listing/[id]',
+      params: { id: listing.id, data: JSON.stringify(listing), median: String(medianIdr) },
+    });
   };
 
   const meta = [
@@ -44,9 +48,9 @@ export function ListingRow({ listing, medianIdr, nowMs }: ListingRowProps) {
 
   return (
     <Pressable
-      onPress={openListing}
-      accessibilityRole="link"
-      accessibilityLabel={`${listing.title}, ${formatIdr(listing.priceIdr)}, buka di ${listing.source}`}
+      onPress={openDetail}
+      accessibilityRole="button"
+      accessibilityLabel={`${listing.title}, ${formatIdr(listing.priceIdr)}, lihat detail`}
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}
     >
       <Thumbnail brand={brand} size={52} />
@@ -70,7 +74,7 @@ export function ListingRow({ listing, medianIdr, nowMs }: ListingRowProps) {
         >
           {formatIdr(listing.priceIdr)}
         </AppText>
-        <Icon name="external" size={15} color="textFaint" />
+        <Icon name="chevron-right" size={18} color="textFaint" />
       </View>
     </Pressable>
   );

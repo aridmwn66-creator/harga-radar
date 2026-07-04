@@ -1,14 +1,16 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import type BottomSheet from '@gorhom/bottom-sheet';
-import type { Condition, Listing, SourceId } from '@/types';
+import type { Condition, SourceId } from '@/types';
 import { colors, enterFade, spacing, textGlow, textStyles } from '@/theme';
-import { conditionLabel, formatIdr, storageLabel } from '@/lib/format';
+import { conditionLabel, formatIdr, formatIdrCompact, storageLabel } from '@/lib/format';
 import { sourceLabel } from '@/lib/sources';
 import { ALL_SOURCES } from '@/lib/sources';
+import { computeAggregate } from '@/lib/stats';
+import { getPriceHistory } from '@/lib/history';
 import { hapticLight, hapticMedium, hapticSuccess } from '@/lib/haptics';
 import { useReport } from '@/query/hooks';
 import { useWatchlistStore, watchlistKey } from '@/store/watchlist';
@@ -17,7 +19,6 @@ import {
   DEFAULT_FILTERS,
   activeFilterCount,
   applyClientFilters,
-  type PricePosition,
   type ReportFilters,
 } from '@/features/report/filters';
 import { AppText } from '@/components/ui/AppText';
@@ -33,6 +34,7 @@ import { SegmentedToggle } from '@/components/ui/SegmentedToggle';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { OdometerNumber } from '@/components/OdometerNumber';
 import { MarketBand } from '@/components/MarketBand';
+import { PriceHistoryChart } from '@/components/PriceHistoryChart';
 import { SourceBreakdown } from '@/components/SourceBreakdown';
 import { ListingRow } from '@/components/ListingRow';
 import { EmptyState } from '@/components/EmptyState';
@@ -40,12 +42,6 @@ import { ErrorState } from '@/components/ErrorState';
 import { FilterSheet } from '@/components/FilterSheet';
 import { TargetPriceEditor } from '@/components/TargetPriceEditor';
 import { TechBackground } from '@/components/TechBackground';
-
-const PRICE_POSITION_LABEL: Record<PricePosition, string> = {
-  all: 'Semua',
-  below: 'Di bawah pasaran',
-  above: 'Di atas pasaran',
-};
 
 export default function ReportScreen() {
   const router = useRouter();
@@ -82,10 +78,9 @@ export default function ReportScreen() {
     location: location ?? undefined,
   });
   const report = query.data;
-  const aggregate = report?.aggregate;
+  const reportAggregate = report?.aggregate;
   const listings = useMemo(() => report?.listings ?? [], [report]);
-  const median = aggregate?.median ?? 0;
-  const hasData = (aggregate?.count ?? 0) > 0;
+  const hasData = (reportAggregate?.count ?? 0) > 0;
 
   // The full option universe for the filter sheet, WITHOUT the location filter,
   // so selecting one location never hides the others. When no location is
@@ -96,10 +91,41 @@ export default function ReportScreen() {
     [universe.data, listings],
   );
 
-  const visible = useMemo(
-    () => applyClientFilters(listings, median, filters),
-    [listings, median, filters],
+  // Source + price-range filters. The DISPLAYED aggregate is recomputed over the
+  // filtered listings, so every filter also moves "harga pasaran". When a filter
+  // empties the list we fall back to the full report so the hero still shows the
+  // market context (the list itself then shows a "no match" state).
+  const visible = useMemo(() => applyClientFilters(listings, filters), [listings, filters]);
+  const displayAggregate = useMemo(() => {
+    if (!reportAggregate) return undefined;
+    return visible.length > 0 ? computeAggregate(visible) : reportAggregate;
+  }, [reportAggregate, visible]);
+  const aggregate = displayAggregate;
+  const median = aggregate?.median ?? 0;
+  const bandListings = visible.length > 0 ? visible : listings;
+
+  // Price domain for the slider comes from the full (unfiltered) report.
+  const priceDomainMin = reportAggregate?.min ?? 0;
+  const priceDomainMax = reportAggregate?.max ?? 0;
+
+  // A ~6 month mock price trend for the current model + variant + condition.
+  // Anchored to the unfiltered report median so client filters do not churn it.
+  const historyMedian = reportAggregate?.median ?? 0;
+  const history = useMemo(
+    () =>
+      historyMedian > 0
+        ? getPriceHistory(`${modelId}:${storageGb ?? 'any'}:${condition}`, historyMedian)
+        : [],
+    [modelId, storageGb, condition, historyMedian],
   );
+
+  // Reset the price range when the query changes (the domain has moved). The
+  // source filter is preserved.
+  useEffect(() => {
+    setFilters((f) =>
+      f.priceMin == null && f.priceMax == null ? f : { ...f, priceMin: null, priceMax: null },
+    );
+  }, [storageGb, condition, location]);
 
   // Distinct locations + sources for the filter sheet, from the (unfiltered)
   // universe so the option lists stay stable as filters are applied.
@@ -228,7 +254,7 @@ export default function ReportScreen() {
               </View>
             </View>
             <View style={styles.band}>
-              <MarketBand aggregate={aggregate} listings={listings} targetPriceIdr={targetPriceIdr} />
+              <MarketBand aggregate={aggregate} listings={bandListings} targetPriceIdr={targetPriceIdr} />
             </View>
           </>
         ) : (
@@ -240,6 +266,23 @@ export default function ReportScreen() {
           </View>
         )}
       </Card>
+
+      {/* Price history trend (mock data; see src/lib/history.ts TODO). */}
+      {hasData && history.length > 1 ? (
+        <Card>
+          <View style={styles.trendHead}>
+            <AppText variant="overline" muted>
+              Tren harga pasaran
+            </AppText>
+            <AppText variant="caption" faint>
+              6 bulan terakhir
+            </AppText>
+          </View>
+          <View style={styles.band}>
+            <PriceHistoryChart data={history} />
+          </View>
+        </Card>
+      ) : null}
 
       {/* Save-to-watchlist CTA. */}
       <View style={styles.ctaRow}>
@@ -287,11 +330,11 @@ export default function ReportScreen() {
                 onPress={() => setFilters((f) => ({ ...f, source: null }))}
               />
             ) : null}
-            {filters.pricePosition !== 'all' ? (
+            {filters.priceMin != null || filters.priceMax != null ? (
               <Chip
-                label={PRICE_POSITION_LABEL[filters.pricePosition]}
-                onRemove={() => setFilters((f) => ({ ...f, pricePosition: 'all' }))}
-                onPress={() => setFilters((f) => ({ ...f, pricePosition: 'all' }))}
+                label={`${formatIdrCompact(filters.priceMin ?? priceDomainMin)} - ${formatIdrCompact(filters.priceMax ?? priceDomainMax)}`}
+                onRemove={() => setFilters((f) => ({ ...f, priceMin: null, priceMax: null }))}
+                onPress={() => setFilters((f) => ({ ...f, priceMin: null, priceMax: null }))}
               />
             ) : null}
           </View>
@@ -383,6 +426,8 @@ export default function ReportScreen() {
         filters={filters}
         onFiltersChange={setFilters}
         sources={sources}
+        priceDomainMin={priceDomainMin}
+        priceDomainMax={priceDomainMax}
         onReset={resetFilters}
         onClose={() => filterSheetRef.current?.close()}
       />
@@ -470,6 +515,11 @@ const styles = StyleSheet.create({
   },
   band: {
     marginTop: spacing.xl,
+  },
+  trendHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   ctaRow: {
     flexDirection: 'row',

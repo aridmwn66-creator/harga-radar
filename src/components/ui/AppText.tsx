@@ -1,4 +1,4 @@
-import { Text, type TextProps, type TextStyle } from 'react-native';
+import { Text, type StyleProp, type TextProps, type TextStyle } from 'react-native';
 import { colors, type ColorToken, textStyles, type TextStyleName } from '@/theme';
 
 // The single text primitive. Enforces the type scale + color tokens so no screen
@@ -11,7 +11,7 @@ type AppTextProps = TextProps & {
   muted?: boolean;
   faint?: boolean;
   center?: boolean;
-  style?: TextStyle | TextStyle[];
+  style?: StyleProp<TextStyle>;
 };
 
 export function AppText({

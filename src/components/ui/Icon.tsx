@@ -1,4 +1,4 @@
-import Svg, { Circle, Line, Path, Polygon, Polyline } from 'react-native-svg';
+import Svg, { Circle, Line, Path, Polygon, Polyline, Rect } from 'react-native-svg';
 import { colors, type ColorToken } from '@/theme';
 
 // A small, hand-drawn line-icon set (24x24, 2px stroke). Custom SVG rather than
@@ -23,7 +23,10 @@ export type IconName =
   | 'edit'
   | 'check'
   | 'activity'
-  | 'clock';
+  | 'clock'
+  | 'wallet'
+  | 'columns'
+  | 'grid';
 
 type IconProps = {
   name: IconName;
@@ -168,6 +171,30 @@ function renderIcon(name: IconName, stroke: string, c: Common) {
         <>
           <Circle cx={12} cy={12} r={9} {...c} />
           <Polyline points="12 7 12 12 16 14" {...c} />
+        </>
+      );
+    case 'wallet':
+      return (
+        <>
+          <Path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" {...c} />
+          <Path d="M3 5v14a2 2 0 0 0 2 2h16v-5" {...c} />
+          <Path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z" {...c} />
+        </>
+      );
+    case 'columns':
+      return (
+        <Path
+          d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18"
+          {...c}
+        />
+      );
+    case 'grid':
+      return (
+        <>
+          <Rect x={3} y={3} width={7} height={7} rx={1.5} {...c} />
+          <Rect x={14} y={3} width={7} height={7} rx={1.5} {...c} />
+          <Rect x={14} y={14} width={7} height={7} rx={1.5} {...c} />
+          <Rect x={3} y={14} width={7} height={7} rx={1.5} {...c} />
         </>
       );
     default:

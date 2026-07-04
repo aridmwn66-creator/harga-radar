@@ -7,18 +7,19 @@ import BottomSheet, {
 } from '@gorhom/bottom-sheet';
 import type { Condition, SourceId } from '@/types';
 import { colors, spacing } from '@/theme';
-import { storageLabel } from '@/lib/format';
+import { formatIdrCompact, storageLabel } from '@/lib/format';
 import { sourceLabel } from '@/lib/sources';
-import type { PricePosition, ReportFilters } from '@/features/report/filters';
+import type { ReportFilters } from '@/features/report/filters';
 import { AppText } from './ui/AppText';
 import { Chip } from './ui/Chip';
 import { Button } from './ui/Button';
 import { SegmentedToggle } from './ui/SegmentedToggle';
+import { RangeSlider } from './ui/RangeSlider';
 
 // Bottom-sheet filter panel. Contains every filter from the spec:
-// kondisi, storage, lokasi, price range (as market position) and source.
-// Storage / condition / location re-fetch the report; source and price position
-// refine the visible list client-side.
+// kondisi, storage, lokasi, price range (min-max slider) and source.
+// Storage / condition / location re-fetch the report; source + price range
+// refine the visible list and the recomputed aggregate.
 
 type FilterSheetProps = {
   storageOptions: number[];
@@ -32,15 +33,12 @@ type FilterSheetProps = {
   filters: ReportFilters;
   onFiltersChange: (f: ReportFilters) => void;
   sources: SourceId[];
+  /** Price domain for the range slider (full min/max of the current report). */
+  priceDomainMin: number;
+  priceDomainMax: number;
   onReset: () => void;
   onClose: () => void;
 };
-
-const PRICE_POSITIONS: { value: PricePosition; label: string }[] = [
-  { value: 'all', label: 'Semua' },
-  { value: 'below', label: 'Di bawah pasaran' },
-  { value: 'above', label: 'Di atas pasaran' },
-];
 
 export const FilterSheet = forwardRef<BottomSheet, FilterSheetProps>(function FilterSheet(
   {
@@ -55,12 +53,14 @@ export const FilterSheet = forwardRef<BottomSheet, FilterSheetProps>(function Fi
     filters,
     onFiltersChange,
     sources,
+    priceDomainMin,
+    priceDomainMax,
     onReset,
     onClose,
   },
   ref,
 ) {
-  const snapPoints = useMemo(() => ['80%'], []);
+  const snapPoints = useMemo(() => ['85%'], []);
 
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
@@ -68,6 +68,17 @@ export const FilterSheet = forwardRef<BottomSheet, FilterSheetProps>(function Fi
     ),
     [],
   );
+
+  const low = filters.priceMin ?? priceDomainMin;
+  const high = filters.priceMax ?? priceDomainMax;
+
+  const onPriceChange = (nextLow: number, nextHigh: number) => {
+    onFiltersChange({
+      ...filters,
+      priceMin: nextLow <= priceDomainMin ? null : nextLow,
+      priceMax: nextHigh >= priceDomainMax ? null : nextHigh,
+    });
+  };
 
   return (
     <BottomSheet
@@ -111,6 +122,26 @@ export const FilterSheet = forwardRef<BottomSheet, FilterSheetProps>(function Fi
           </View>
         </Section>
 
+        <Section title="Rentang harga">
+          <View style={styles.priceHead}>
+            <AppText variant="number" color="up">
+              {formatIdrCompact(low)}
+            </AppText>
+            <AppText variant="number" color="up">
+              {formatIdrCompact(high)}
+            </AppText>
+          </View>
+          {priceDomainMax > priceDomainMin ? (
+            <RangeSlider
+              min={priceDomainMin}
+              max={priceDomainMax}
+              low={low}
+              high={high}
+              onChange={onPriceChange}
+            />
+          ) : null}
+        </Section>
+
         <Section title="Lokasi">
           <View style={styles.chipRow}>
             <Chip
@@ -124,19 +155,6 @@ export const FilterSheet = forwardRef<BottomSheet, FilterSheetProps>(function Fi
                 label={loc}
                 selected={location === loc}
                 onPress={() => onLocationChange(loc)}
-              />
-            ))}
-          </View>
-        </Section>
-
-        <Section title="Posisi harga">
-          <View style={styles.chipRow}>
-            {PRICE_POSITIONS.map((p) => (
-              <Chip
-                key={p.value}
-                label={p.label}
-                selected={filters.pricePosition === p.value}
-                onPress={() => onFiltersChange({ ...filters, pricePosition: p.value })}
               />
             ))}
           </View>
@@ -202,6 +220,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
+  },
+  priceHead: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   footer: {
     flexDirection: 'row',
