@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Animated from 'react-native-reanimated';
 import type { ModelSummary, ReportParams, WatchlistItem } from '@/types';
-import { colors, enterFade, spacing } from '@/theme';
+import { colors, enterFade, radius, spacing } from '@/theme';
 import { hapticLight } from '@/lib/haptics';
 import { useSearch, useReports } from '@/query/hooks';
 import { queryClient } from '@/query/client';
@@ -109,7 +109,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
       <TechBackground />
-      <Hero3D height={300} />
+      <Hero3D height={320} />
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.content}
@@ -169,16 +169,11 @@ export default function HomeScreen() {
               title="Trending"
               action={<Chip label="Lihat Semua" onPress={() => router.push('/catalog')} />}
             >
-              <Card padded={false} style={styles.listCard}>
-                {TRENDING_MODELS.map((model, i) => (
-                  <View key={model.id}>
-                    {i > 0 ? <View style={styles.divider} /> : null}
-                    <View style={styles.rowPad}>
-                      <ModelRow model={model} onPress={() => openReport(model)} />
-                    </View>
-                  </View>
+              <View style={styles.list}>
+                {TRENDING_MODELS.map((model) => (
+                  <ModelRow key={model.id} model={model} onPress={() => openReport(model)} />
                 ))}
-              </Card>
+              </View>
             </Section>
 
             <Section
@@ -249,20 +244,17 @@ function SearchResultsSection({
   }
   if (isLoading && models.length === 0) {
     return (
-      <Card padded={false} style={styles.listCard}>
+      <View style={styles.list}>
         {[0, 1, 2].map((i) => (
-          <View key={i}>
-            {i > 0 ? <View style={styles.divider} /> : null}
-            <View style={styles.searchSkeletonRow}>
-              <Skeleton width={46} height={46} borderRadius={12} />
-              <View style={styles.searchSkeletonBody}>
-                <Skeleton width="70%" height={15} />
-                <Skeleton width="45%" height={11} />
-              </View>
+          <View key={i} style={styles.searchSkeletonRow}>
+            <Skeleton width={46} height={46} borderRadius={12} />
+            <View style={styles.searchSkeletonBody}>
+              <Skeleton width="70%" height={15} />
+              <Skeleton width="45%" height={11} />
             </View>
           </View>
         ))}
-      </Card>
+      </View>
     );
   }
   if (models.length === 0) {
@@ -273,17 +265,10 @@ function SearchResultsSection({
     );
   }
   return (
-    <Animated.View entering={enterFade}>
-      <Card padded={false} style={styles.listCard}>
-        {models.map((model, i) => (
-          <View key={model.id}>
-            {i > 0 ? <View style={styles.divider} /> : null}
-            <View style={styles.rowPad}>
-              <ModelRow model={model} onPress={() => onSelect(model)} />
-            </View>
-          </View>
-        ))}
-      </Card>
+    <Animated.View entering={enterFade} style={styles.list}>
+      {models.map((model) => (
+        <ModelRow key={model.id} model={model} onPress={() => onSelect(model)} />
+      ))}
     </Animated.View>
   );
 }
@@ -338,6 +323,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 5,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    backgroundColor: colors.surface,
   },
   section: {
     gap: spacing.md,
@@ -352,15 +343,8 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: spacing.sm,
   },
-  listCard: {
-    paddingHorizontal: spacing.lg,
-  },
-  rowPad: {
-    paddingVertical: 2,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.hairline,
+  list: {
+    gap: spacing.md,
   },
   snapshot: {
     gap: spacing.md,
@@ -369,7 +353,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.panel,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.hairline,
   },
   searchSkeletonBody: {
     flex: 1,

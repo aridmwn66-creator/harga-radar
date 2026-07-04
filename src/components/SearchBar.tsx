@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { colors, fonts, radius, spacing } from '@/theme';
+import { colors, fonts, glow, radius, spacing } from '@/theme';
 import { Icon } from './ui/Icon';
 
 // The prominent search field. Controlled input with a leading radar/search icon
@@ -23,20 +24,23 @@ export function SearchBar({
   placeholder = 'Cari HP...',
   autoFocus,
 }: SearchBarProps) {
+  const [focused, setFocused] = useState(false);
   return (
-    <View style={styles.wrap}>
-      <Icon name="search" size={20} color="textMuted" />
+    <View style={[styles.wrap, focused && styles.wrapFocused]}>
+      <Icon name="search" size={20} color={focused ? 'accent' : 'textMuted'} />
       <TextInput
         value={value}
         onChangeText={onChangeText}
         onSubmitEditing={onSubmit}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
         placeholder={placeholder}
         placeholderTextColor={colors.textFaint}
         autoFocus={autoFocus}
         autoCapitalize="none"
         autoCorrect={false}
         returnKeyType="search"
-        selectionColor={colors.up}
+        selectionColor={colors.accent}
         style={styles.input}
         accessibilityLabel="Cari model HP"
       />
@@ -68,6 +72,10 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.panelBorder,
+  },
+  wrapFocused: {
+    borderColor: colors.panelBorderActive,
+    ...glow.cyan,
   },
   input: {
     flex: 1,

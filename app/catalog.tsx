@@ -79,7 +79,7 @@ export default function CatalogScreen() {
 }
 
 function Divider() {
-  return <View style={styles.divider} />;
+  return <View style={styles.separator} />;
 }
 
 const styles = StyleSheet.create({
@@ -107,8 +107,7 @@ const styles = StyleSheet.create({
   rule: {
     marginTop: spacing.xs,
   },
-  divider: {
-    height: 1,
-    backgroundColor: colors.hairline,
+  separator: {
+    height: spacing.md,
   },
 });

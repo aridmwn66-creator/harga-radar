@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View, type ViewProps, type ViewStyle } from 'react-native';
-import { colors, glow as glowFx, radius, spacing } from '@/theme';
+import { colors, elevation, glow as glowFx, radius, spacing } from '@/theme';
 import { NeonDivider } from './NeonDivider';
 import { HudCorners } from './HudCorners';
 
-// Holographic panel: a recessed near-black fill, a cool faintly-neon hairline,
-// and a fading cyan "sheen" along the top edge. Optional soft glow + HUD corner
-// brackets mark the most important panels. No heavy Material elevation.
+// Elevated glass panel: a lifted blue-black fill, a hairline border, a soft
+// layered drop shadow, and a fading cyan "sheen" along the top edge. Optional
+// accent glow + HUD corner brackets mark the most important panels.
 
 type GlowKind = 'lime' | 'cyan';
 
@@ -41,6 +41,9 @@ export function Card({
         // clip would also swallow the shadow (those panels are padded, so their
         // content never reaches the corners anyway).
         { overflow: glow ? 'visible' : 'hidden' },
+        // Soft layered drop shadow so the card reads as raised. A glow panel
+        // brings its own accent shadow, so skip the neutral one there.
+        glow ? null : elevation.card,
         glowStyle,
         padded && styles.padded,
         style,

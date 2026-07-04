@@ -19,10 +19,10 @@ const gutterStyle: CSSProperties = {
   inset: 0,
   backgroundColor: colors.background,
   backgroundImage: [
-    'radial-gradient(58% 46% at 16% 12%, rgba(182,255,60,0.10), transparent 70%)',
-    'radial-gradient(54% 44% at 86% 88%, rgba(58,232,255,0.10), transparent 72%)',
-    'linear-gradient(rgba(150,205,230,0.05) 1px, transparent 1px)',
-    'linear-gradient(90deg, rgba(150,205,230,0.05) 1px, transparent 1px)',
+    'radial-gradient(58% 46% at 15% 12%, rgba(56,189,248,0.12), transparent 70%)',
+    'radial-gradient(54% 44% at 86% 88%, rgba(14,165,233,0.12), transparent 72%)',
+    'linear-gradient(rgba(56,189,248,0.05) 1px, transparent 1px)',
+    'linear-gradient(90deg, rgba(56,189,248,0.05) 1px, transparent 1px)',
   ].join(','),
   backgroundSize: `100% 100%, 100% 100%, ${GRID}px ${GRID}px, ${GRID}px ${GRID}px`,
 };

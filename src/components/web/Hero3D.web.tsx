@@ -4,23 +4,36 @@ import { useReducedMotion } from 'react-native-reanimated';
 import * as THREE from 'three';
 import { colors } from '@/theme';
 
-// Web-only 3D hero backdrop (three.js). A slow, low-poly wireframe pair (acid
-// lime + electric cyan) drifting inside a faint particle field, matching the
-// futuristic-terminal theme. Tasteful and quiet: it sits behind the hero content
-// and never competes with it. Performance-guarded: capped pixel ratio, paused
-// when the tab is hidden, and rendered as a single static frame when the user
-// prefers reduced motion. Fails silently (leaving the themed CSS background) if
-// WebGL is unavailable, and disposes all GPU resources on unmount.
+// Web-only 3D hero backdrop (three.js). A slow, low-poly cyan wireframe pair
+// drifting inside a faint particle field, matching the premium-dark techno
+// theme. It is ambient, not a foreground object: low line density, low opacity,
+// seated low in the banner, and fenced by radial fades top and bottom so the
+// "HargaRadar" title and the search bar always sit on clean background and the
+// content below is never obscured. Performance-guarded (capped pixel ratio,
+// paused when hidden), a single static frame under reduced motion, fails
+// silently without WebGL, and disposes all GPU resources on unmount.
 
 type Hero3DProps = { height?: number };
 
-const fadeStyle = {
+// Fade the TOP so the title/search sit on clean background (no collision), and
+// the BOTTOM so it dissolves into the content. The object only reads in the
+// middle band as an ambient backdrop.
+const topFadeStyle = {
+  position: 'absolute' as const,
+  top: 0,
+  left: 0,
+  right: 0,
+  height: '46%',
+  background: `linear-gradient(to top, rgba(8,11,17,0) 0%, ${colors.background} 92%)`,
+  pointerEvents: 'none' as const,
+};
+const bottomFadeStyle = {
   position: 'absolute' as const,
   left: 0,
   right: 0,
   bottom: 0,
-  height: '60%',
-  background: `linear-gradient(to bottom, rgba(10,11,13,0) 0%, ${colors.background} 96%)`,
+  height: '52%',
+  background: `linear-gradient(to bottom, rgba(8,11,17,0) 0%, ${colors.background} 94%)`,
   pointerEvents: 'none' as const,
 };
 
@@ -30,7 +43,7 @@ const canvasStyle = {
   display: 'block' as const,
 };
 
-export function Hero3D({ height = 300 }: Hero3DProps) {
+export function Hero3D({ height = 320 }: Hero3DProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const reduced = useReducedMotion();
 
@@ -58,30 +71,35 @@ export function Hero3D({ height = 300 }: Hero3DProps) {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 100);
-    camera.position.z = 4.4;
+    camera.position.z = 4.6;
 
-    const lime = new THREE.Color(colors.up);
     const cyan = new THREE.Color(colors.cyan);
+    const cyanBright = new THREE.Color(colors.accentBright);
 
     const group = new THREE.Group();
-    // Sit a little high so the densest wireframe reads behind the brand/search,
-    // leaving the content below it clean.
-    group.position.y = 0.55;
+    // Seat the wireframe LOW in the banner so it never reaches the title/search.
+    group.position.y = -0.5;
     scene.add(group);
 
-    const outerGeo = new THREE.IcosahedronGeometry(1.35, 1);
+    // Lower line density (detail 0 icosahedra, ~40% fewer edges than before) and
+    // low opacity, so it reads as an ambient cyan backdrop.
+    const outerGeo = new THREE.IcosahedronGeometry(1.5, 0);
     const outerWire = new THREE.WireframeGeometry(outerGeo);
-    const outerMat = new THREE.LineBasicMaterial({ color: lime, transparent: true, opacity: 0.4 });
+    const outerMat = new THREE.LineBasicMaterial({ color: cyan, transparent: true, opacity: 0.32 });
     const outer = new THREE.LineSegments(outerWire, outerMat);
     group.add(outer);
 
-    const innerGeo = new THREE.IcosahedronGeometry(0.8, 0);
+    const innerGeo = new THREE.IcosahedronGeometry(0.85, 0);
     const innerWire = new THREE.WireframeGeometry(innerGeo);
-    const innerMat = new THREE.LineBasicMaterial({ color: cyan, transparent: true, opacity: 0.3 });
+    const innerMat = new THREE.LineBasicMaterial({
+      color: cyanBright,
+      transparent: true,
+      opacity: 0.22,
+    });
     const inner = new THREE.LineSegments(innerWire, innerMat);
     group.add(inner);
 
-    const COUNT = 340;
+    const COUNT = 280;
     const positions = new Float32Array(COUNT * 3);
     for (let i = 0; i < COUNT; i += 1) {
       positions[i * 3] = (Math.random() - 0.5) * 11;
@@ -94,7 +112,7 @@ export function Hero3D({ height = 300 }: Hero3DProps) {
       color: cyan,
       size: 0.02,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.5,
     });
     const points = new THREE.Points(pointsGeo, pointsMat);
     scene.add(points);
@@ -105,9 +123,9 @@ export function Hero3D({ height = 300 }: Hero3DProps) {
     let running = false;
     const loop = () => {
       if (!running) return;
-      group.rotation.y += 0.0016;
-      group.rotation.x += 0.0007;
-      inner.rotation.y -= 0.003;
+      group.rotation.y += 0.0015;
+      group.rotation.x += 0.0006;
+      inner.rotation.y -= 0.0028;
       points.rotation.y += 0.0004;
       render();
       raf = window.requestAnimationFrame(loop);
@@ -139,7 +157,7 @@ export function Hero3D({ height = 300 }: Hero3DProps) {
 
     if (reduced) {
       // A single, composed static frame. No animation loop.
-      group.rotation.set(0.32, 0.6, 0);
+      group.rotation.set(0.3, 0.6, 0);
       render();
     } else {
       start();
@@ -164,7 +182,8 @@ export function Hero3D({ height = 300 }: Hero3DProps) {
   return (
     <View pointerEvents="none" style={[styles.container, { height }]}>
       <canvas ref={canvasRef} style={canvasStyle} />
-      <div style={fadeStyle} aria-hidden />
+      <div style={topFadeStyle} aria-hidden />
+      <div style={bottomFadeStyle} aria-hidden />
     </View>
   );
 }

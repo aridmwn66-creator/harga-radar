@@ -61,7 +61,7 @@ export default function ListingDetailScreen() {
   const score = dealScore(listing.priceIdr, medianIdr);
   const below = medianIdr > 0 && listing.priceIdr < medianIdr;
   const pct = medianIdr > 0 ? Math.round((Math.abs(listing.priceIdr - medianIdr) / medianIdr) * 100) : 0;
-  const dealColor = below ? colors.up : colors.down;
+  const dealColor = below ? colors.dealGood : colors.down;
 
   const openMarketplace = async () => {
     hapticLight();
@@ -106,7 +106,7 @@ export default function ListingDetailScreen() {
             </AppText>
             {medianIdr > 0 ? (
               <View style={styles.dealRow}>
-                <View style={[styles.dealBadge, { backgroundColor: below ? colors.upTint : colors.downTint }]}>
+                <View style={[styles.dealBadge, { backgroundColor: below ? colors.dealGoodTint : colors.downTint }]}>
                   <StatusDot color={dealColor} size={6} />
                   <AppText variant="label" style={{ color: dealColor }}>
                     {pct}% {below ? 'di bawah pasaran' : 'di atas pasaran'}

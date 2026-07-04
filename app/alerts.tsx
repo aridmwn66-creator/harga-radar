@@ -144,17 +144,17 @@ export default function AlertsScreen() {
                   <View
                     style={[
                       styles.badge,
-                      { backgroundColor: triggered ? colors.upTint : colors.surfaceRaised },
+                      { backgroundColor: triggered ? colors.dealGoodTint : colors.surfaceRaised },
                     ]}
                   >
                     <StatusDot
-                      color={triggered ? colors.up : alert.enabled ? colors.cyan : colors.textFaint}
+                      color={triggered ? colors.dealGood : alert.enabled ? colors.cyan : colors.textFaint}
                       size={6}
                       glow={triggered}
                     />
                     <AppText
                       variant="label"
-                      style={{ color: triggered ? colors.up : colors.textMuted }}
+                      style={{ color: triggered ? colors.dealGood : colors.textMuted }}
                     >
                       {isLoading
                         ? 'Mengecek...'

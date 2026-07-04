@@ -91,11 +91,8 @@ export const ModelPickerSheet = forwardRef<SheetHandle, ModelPickerSheetProps>(
               Model tidak ditemukan
             </AppText>
           ) : (
-            results.map((model, i) => (
-              <View key={model.id}>
-                {i > 0 ? <View style={styles.divider} /> : null}
-                <ModelRow model={model} onPress={() => onSelect(model)} />
-              </View>
+            results.map((model) => (
+              <ModelRow key={model.id} model={model} onPress={() => onSelect(model)} />
             ))
           )}
         </BottomSheetScrollView>
@@ -140,10 +137,7 @@ const styles = StyleSheet.create({
   list: {
     paddingHorizontal: spacing.xl,
     paddingBottom: spacing.huge,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.hairline,
+    gap: spacing.md,
   },
   empty: {
     paddingVertical: spacing.huge,

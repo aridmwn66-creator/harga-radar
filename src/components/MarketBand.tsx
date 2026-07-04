@@ -165,7 +165,7 @@ export function MarketBand({
                 clock={clock}
                 cx={scaleX(l.priceIdr)}
                 cy={dotBandBottom - jitter(l.id) * (dotBandBottom - dotBandTop)}
-                fill={l.priceIdr < median ? colors.up : colors.down}
+                fill={l.priceIdr < median ? colors.dealGood : colors.down}
                 startFrac={startMs / totalMs}
                 endFrac={(startMs + dotFadeMs) / totalMs}
               />

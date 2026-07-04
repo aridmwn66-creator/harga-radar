@@ -3,7 +3,7 @@ import { colors, radius, spacing } from '@/theme';
 import { formatPercent } from '@/lib/format';
 import { AppText } from './AppText';
 
-// Acid-lime "di bawah pasaran" tag. `score` is a positive fraction below median
+// Emerald "di bawah pasaran" tag. `score` is a positive fraction below median
 // (0.18 -> "-18%"). When compact, drops the words and shows just the percent.
 
 type DealTagProps = {
@@ -18,7 +18,7 @@ export function DealTag({ score, compact = false }: DealTagProps) {
   return (
     <View style={styles.tag}>
       <View style={styles.dot} />
-      <AppText variant="overline" style={{ color: colors.up, letterSpacing: 0.4 }}>
+      <AppText variant="overline" style={{ color: colors.dealGood, letterSpacing: 0.4 }}>
         {label}
       </AppText>
     </View>
@@ -33,13 +33,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 4,
     borderRadius: radius.pill,
-    backgroundColor: colors.upTint,
+    backgroundColor: colors.dealGoodTint,
     alignSelf: 'flex-start',
   },
   dot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: colors.up,
+    backgroundColor: colors.dealGood,
   },
 });

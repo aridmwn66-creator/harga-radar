@@ -70,7 +70,7 @@ export function ListingRow({ listing, medianIdr, nowMs }: ListingRowProps) {
 
       <View style={styles.right}>
         <AppText
-          style={[textStyles.numberLg, { color: deal ? colors.up : colors.text }]}
+          style={[textStyles.numberLg, { color: deal ? colors.dealGood : colors.text }]}
         >
           {formatIdr(listing.priceIdr)}
         </AppText>

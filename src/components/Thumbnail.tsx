@@ -44,7 +44,7 @@ export function Thumbnail({ brand, size = 48 }: ThumbnailProps) {
           opacity={0.28}
         />
       </Svg>
-      <AppText variant="heading" style={{ color: colors.textMuted }}>
+      <AppText variant="heading" style={{ color: colors.text }}>
         {brandMonogram(brand)}
       </AppText>
     </View>

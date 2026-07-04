@@ -1,13 +1,15 @@
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import type { ModelSummary } from '@/types';
-import { colors, spacing } from '@/theme';
+import { colors, elevation, radius, spacing } from '@/theme';
 import { storageLabel } from '@/lib/format';
 import { Thumbnail } from './Thumbnail';
 import { AppText } from './ui/AppText';
 import { Icon } from './ui/Icon';
 
-// Compact model list item, reused for search results and the trending list.
+// Model list item, reused for search results, the trending list and the catalog.
+// It is a self-contained elevated card (blue-black fill, hairline border, soft
+// shadow) that lifts to a brighter surface with a faint accent border on press.
 
 type ModelRowProps = {
   model: ModelSummary;
@@ -44,10 +46,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.panel,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    ...elevation.card,
   },
   pressed: {
-    opacity: 0.6,
+    backgroundColor: colors.surfaceRaised,
+    borderColor: colors.panelBorderActive,
   },
   middle: {
     flex: 1,

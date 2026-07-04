@@ -106,17 +106,17 @@ export function WatchlistCard({
             <View
               style={[
                 styles.indicator,
-                { backgroundColor: alerting ? colors.upTint : colors.surfaceRaised },
+                { backgroundColor: alerting ? colors.dealGoodTint : colors.surfaceRaised },
               ]}
             >
               <StatusDot
-                color={alerting ? colors.up : colors.textFaint}
+                color={alerting ? colors.dealGood : colors.textFaint}
                 size={6}
                 glow={alerting}
               />
               <AppText
                 variant="label"
-                style={{ color: alerting ? colors.up : colors.textMuted }}
+                style={{ color: alerting ? colors.dealGood : colors.textMuted }}
               >
                 {alerting
                   ? `${belowTarget} di bawah target`
