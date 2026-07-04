@@ -67,7 +67,112 @@ const CATALOG = [
     variants: { 256: [4_200_000, 5_500_000] } },
   { id: 'vivo-v29', brand: 'vivo', name: 'V29 5G', pop: 4,
     variants: { 256: [4_000_000, 5_300_000] } },
+
+  // ---- added models -----------------------------------------------------------
+  // New entries give a bare number per variant (the used-price median, IDR); the
+  // "new" price is derived via newFactor below (default 1.35). Prices reflect the
+  // 2026 Indonesian second-hand market: newest flagships cost the most, older
+  // generations taper down.
+
+  // Apple - older generations
+  { id: 'iphone-x', brand: 'Apple', name: 'iPhone X', pop: 5, newFactor: 1.4,
+    variants: { 64: 2_500_000, 256: 3_100_000 } },
+  { id: 'iphone-xr', brand: 'Apple', name: 'iPhone XR', pop: 7, newFactor: 1.4,
+    variants: { 64: 2_900_000, 128: 3_400_000, 256: 3_900_000 } },
+  { id: 'iphone-se-2022', brand: 'Apple', name: 'iPhone SE (2022)', pop: 5, newFactor: 1.35,
+    variants: { 64: 3_800_000, 128: 4_400_000, 256: 5_000_000 } },
+  { id: 'iphone-13-pro', brand: 'Apple', name: 'iPhone 13 Pro', pop: 6, newFactor: 1.3,
+    variants: { 128: 8_500_000, 256: 9_500_000, 512: 11_000_000 } },
+  { id: 'iphone-14-pro', brand: 'Apple', name: 'iPhone 14 Pro', pop: 6, newFactor: 1.28,
+    variants: { 128: 11_000_000, 256: 12_500_000, 512: 14_500_000 } },
+  { id: 'iphone-15-pro', brand: 'Apple', name: 'iPhone 15 Pro', pop: 6, newFactor: 1.25,
+    variants: { 128: 13_500_000, 256: 15_000_000, 512: 17_500_000 } },
+
+  // Apple - iPhone 16 family
+  { id: 'iphone-16', brand: 'Apple', name: 'iPhone 16', pop: 7, newFactor: 1.2,
+    variants: { 128: 13_500_000, 256: 15_000_000, 512: 17_500_000 } },
+  { id: 'iphone-16-plus', brand: 'Apple', name: 'iPhone 16 Plus', pop: 5, newFactor: 1.2,
+    variants: { 128: 15_000_000, 256: 16_500_000, 512: 19_000_000 } },
+  { id: 'iphone-16e', brand: 'Apple', name: 'iPhone 16e', pop: 5, newFactor: 1.15,
+    variants: { 128: 9_000_000, 256: 10_500_000 } },
+  { id: 'iphone-16-pro', brand: 'Apple', name: 'iPhone 16 Pro', pop: 6, newFactor: 1.18,
+    variants: { 128: 16_000_000, 256: 17_500_000, 512: 20_000_000, 1024: 23_000_000 } },
+  { id: 'iphone-16-pro-max', brand: 'Apple', name: 'iPhone 16 Pro Max', pop: 6, newFactor: 1.18,
+    variants: { 256: 19_000_000, 512: 22_000_000, 1024: 25_000_000 } },
+
+  // Apple - iPhone 17 family (newest, most expensive)
+  { id: 'iphone-17', brand: 'Apple', name: 'iPhone 17', pop: 6, newFactor: 1.12,
+    variants: { 256: 16_000_000, 512: 18_500_000 } },
+  { id: 'iphone-17-plus', brand: 'Apple', name: 'iPhone 17 Plus', pop: 4, newFactor: 1.12,
+    variants: { 256: 17_500_000, 512: 20_000_000 } },
+  { id: 'iphone-17-pro', brand: 'Apple', name: 'iPhone 17 Pro', pop: 5, newFactor: 1.1,
+    variants: { 256: 19_500_000, 512: 22_000_000, 1024: 26_000_000 } },
+  { id: 'iphone-17-pro-max', brand: 'Apple', name: 'iPhone 17 Pro Max', pop: 6, newFactor: 1.1,
+    variants: { 256: 22_000_000, 512: 25_000_000, 1024: 29_000_000 } },
+
+  // Samsung
+  { id: 'samsung-galaxy-s22', brand: 'Samsung', name: 'Galaxy S22', pop: 6, newFactor: 1.35,
+    variants: { 128: 4_500_000, 256: 5_200_000 } },
+  { id: 'samsung-galaxy-s24', brand: 'Samsung', name: 'Galaxy S24', pop: 6, newFactor: 1.25,
+    variants: { 256: 9_500_000, 512: 11_000_000 } },
+  { id: 'samsung-galaxy-s24-ultra', brand: 'Samsung', name: 'Galaxy S24 Ultra', pop: 5, newFactor: 1.22,
+    variants: { 256: 15_000_000, 512: 17_000_000, 1024: 19_500_000 } },
+  { id: 'samsung-galaxy-a34', brand: 'Samsung', name: 'Galaxy A34 5G', pop: 6, newFactor: 1.35,
+    variants: { 128: 2_800_000, 256: 3_300_000 } },
+  { id: 'samsung-galaxy-a15', brand: 'Samsung', name: 'Galaxy A15', pop: 8, newFactor: 1.35,
+    variants: { 128: 1_600_000, 256: 1_900_000 } },
+  { id: 'samsung-galaxy-m14', brand: 'Samsung', name: 'Galaxy M14 5G', pop: 6, newFactor: 1.35,
+    variants: { 128: 1_500_000 } },
+
+  // Xiaomi / POCO
+  { id: 'xiaomi-redmi-note-12', brand: 'Xiaomi', name: 'Redmi Note 12', pop: 7, newFactor: 1.35,
+    variants: { 128: 1_600_000, 256: 1_900_000 } },
+  { id: 'xiaomi-14', brand: 'Xiaomi', name: 'Xiaomi 14', pop: 5, newFactor: 1.25,
+    variants: { 256: 7_000_000, 512: 8_000_000 } },
+  { id: 'poco-x6', brand: 'POCO', name: 'POCO X6', pop: 6, newFactor: 1.3,
+    variants: { 256: 3_000_000, 512: 3_500_000 } },
+  { id: 'xiaomi-redmi-13c', brand: 'Xiaomi', name: 'Redmi 13C', pop: 7, newFactor: 1.35,
+    variants: { 128: 1_200_000, 256: 1_500_000 } },
+
+  // OPPO
+  { id: 'oppo-a78', brand: 'OPPO', name: 'A78 5G', pop: 5, newFactor: 1.35,
+    variants: { 128: 2_400_000, 256: 2_800_000 } },
+  { id: 'oppo-a58', brand: 'OPPO', name: 'A58', pop: 5, newFactor: 1.35,
+    variants: { 128: 1_900_000 } },
+
+  // vivo
+  { id: 'vivo-v30', brand: 'vivo', name: 'V30 5G', pop: 5, newFactor: 1.3,
+    variants: { 256: 4_500_000, 512: 5_200_000 } },
+  { id: 'vivo-y36', brand: 'vivo', name: 'Y36', pop: 5, newFactor: 1.35,
+    variants: { 128: 2_200_000, 256: 2_600_000 } },
+
+  // Realme
+  { id: 'realme-12', brand: 'Realme', name: 'Realme 12', pop: 7, newFactor: 1.3,
+    variants: { 128: 2_400_000, 256: 2_800_000 } },
+  { id: 'realme-c55', brand: 'Realme', name: 'Realme C55', pop: 7, newFactor: 1.35,
+    variants: { 128: 1_500_000, 256: 1_800_000 } },
+  { id: 'realme-11', brand: 'Realme', name: 'Realme 11', pop: 6, newFactor: 1.35,
+    variants: { 128: 2_100_000, 256: 2_500_000 } },
+
+  // Infinix / Tecno
+  { id: 'infinix-note-40', brand: 'Infinix', name: 'Infinix Note 40', pop: 6, newFactor: 1.3,
+    variants: { 128: 1_900_000, 256: 2_200_000 } },
+  { id: 'tecno-spark-20', brand: 'Tecno', name: 'Tecno Spark 20', pop: 6, newFactor: 1.35,
+    variants: { 128: 1_300_000, 256: 1_500_000 } },
 ];
+
+// Normalize variant values: a bare number is a used-price base; derive the "new"
+// price from it via the model's newFactor. Existing entries already use explicit
+// [used, new] tuples and are left untouched.
+for (const model of CATALOG) {
+  const factor = model.newFactor ?? 1.35;
+  for (const key of Object.keys(model.variants)) {
+    const v = model.variants[key];
+    if (!Array.isArray(v)) {
+      model.variants[key] = [v, Math.round((v * factor) / 50_000) * 50_000];
+    }
+  }
+}
 
 const LOCATIONS = [
   ['Jakarta Selatan', 20], ['Jakarta Barat', 12], ['Jakarta Timur', 10],
@@ -149,7 +254,7 @@ function makeListing(model, storageGb, base) {
 const listings = [];
 for (const model of CATALOG) {
   const storages = Object.keys(model.variants).map(Number);
-  const count = 12 + model.pop * 5; // 32..62 listings per model
+  const count = 10 + model.pop * 3; // ~19..44 listings per model, scaled by popularity
   // Storage weighting: 128 is most common, larger less so, 64 least.
   const storageWeights = storages.map((s) => {
     if (s === 128) return 5;
@@ -175,10 +280,23 @@ const models = CATALOG.map((m) => ({
   availableStorageGb: Object.keys(m.variants).map(Number).sort((a, b) => a - b),
 }));
 
-const trending = [...CATALOG].sort((a, b) => b.pop - a.pop).slice(0, 6).map((m) => m.id);
+// Curated trending: a brand-diverse mix (not all iPhone at the top) so it reads
+// like the real Indonesian market. Only ids present in the catalog are kept.
+const TRENDING = [
+  'iphone-16',
+  'samsung-galaxy-a54',
+  'xiaomi-redmi-note-13',
+  'realme-12',
+  'iphone-15',
+  'poco-x6',
+  'samsung-galaxy-s24',
+  'oppo-reno-11',
+];
+const catalogIds = new Set(CATALOG.map((m) => m.id));
+const trending = TRENDING.filter((id) => catalogIds.has(id));
 
 // ---- emit --------------------------------------------------------------------
-const header = `// AUTO-GENERATED by scratchpad/gen-fixtures.mjs. Do not edit by hand.
+const header = `// AUTO-GENERATED by scripts/generate-fixtures.mjs. Do not edit by hand.
 // Reproducible: seeded RNG + fixed reference date (2026-07-03). Re-run the
 // generator to regenerate. Realistic Indonesian second-hand phone data in IDR.\n`;
 
