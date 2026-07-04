@@ -19,6 +19,7 @@ import { Icon } from '@/components/ui/Icon';
 import { StatusDot } from '@/components/ui/StatusDot';
 import { NeonDivider } from '@/components/ui/NeonDivider';
 import { TechBackground } from '@/components/TechBackground';
+import { Hero3D } from '@/components/web/Hero3D';
 import { SearchBar } from '@/components/SearchBar';
 import { ModelRow } from '@/components/ModelRow';
 import { WatchlistCard } from '@/components/WatchlistCard';
@@ -108,6 +109,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
       <TechBackground />
+      <Hero3D height={300} />
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.content}

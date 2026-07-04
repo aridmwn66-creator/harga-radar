@@ -40,17 +40,19 @@ data, so the site opens and works out of the box.
 Build it:
 
 ```bash
-npx expo export --platform web
+npm run build:web
 ```
 
-This writes a complete website to `dist/` (configured via `web.output: "single"`
-in `app.json`). It includes `dist/_redirects` (copied from `public/`) so
-client-side routes keep working when a deep link is opened or a page is refreshed
-on Netlify.
+This runs `expo export --platform web` and then patches the generated
+`dist/index.html` (dark page background so there is no white flash on load, plus
+the mobile theme color and `viewport-fit=cover` for iPhone safe areas). It writes
+a complete website to `dist/` (configured via `web.output: "single"` in
+`app.json`). It includes `dist/_redirects` (copied from `public/`) so client-side
+routes keep working when a deep link is opened or a page is refreshed on Netlify.
 
 Deploy with Netlify Drop (no account, no CLI, drag and drop):
 
-1. Run `npx expo export --platform web` to produce `dist/`.
+1. Run `npm run build:web` to produce `dist/`.
 2. Open https://app.netlify.com/drop in your browser.
 3. Drag the whole `dist/` folder onto the page. Netlify gives you a public URL
    in a few seconds. Open it on any phone or computer.
@@ -64,11 +66,30 @@ To point the website at the live backend instead of the sample data, set the URL
 at build time and switch the source to `Live` in Setelan:
 
 ```bash
-EXPO_PUBLIC_API_URL=https://your-backend.example.com npx expo export --platform web
+EXPO_PUBLIC_API_URL=https://your-backend.example.com npm run build:web
 ```
 
 If the backend is unreachable, the site falls back to the sample data instead of
 erroring.
+
+### Web presentation
+
+The web build is tuned to look like the phone app, not a stretched desktop page:
+
+- On a wide screen (laptop) the app is constrained to a centered phone-width
+  column, and the gutters are filled with a themed backdrop (faint HUD grid +
+  soft lime/cyan glows). On a phone it is full width, identical to native. This
+  is web-only (`WebFrame.web.tsx`); native renders its children unchanged.
+- A subtle 3D hero (three.js: a slow low-poly wireframe pair in acid lime +
+  electric cyan inside a particle field) sits behind the Home header. It is
+  web-only (`Hero3D.web.tsx`), performance-guarded (capped pixel ratio, paused
+  when the tab is hidden), a single static frame under `prefers-reduced-motion`,
+  and a no-op on native. `three` is therefore never bundled for Expo Go.
+- Fonts (Space Grotesk + Inter) are loaded before the app renders and eagerly
+  preloaded on web, so there is no fallback-font flash (FOUT).
+- The odometer, market-band draw-in, and content entrances animate smoothly on
+  web and all honour `prefers-reduced-motion` (the odometer has a web variant,
+  `OdometerNumber.web.tsx`, that rolls via requestAnimationFrame).
 
 ### Web fallbacks
 
