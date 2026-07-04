@@ -24,7 +24,10 @@ export const carousellSource: Source = {
         origin: ORIGIN,
         source: 'carousell',
         defaultCondition: 'used',
-        waitForSelector: 'a[href*="/p/"]',
+        // Carousell renders results with JS. Wait for a product link or any
+        // listing test-id before extracting; fall back to the heuristic if the
+        // markup differs.
+        waitForSelector: 'a[href*="/p/"], [data-testid*="listing"], main [data-testid]',
         extract: {
           // Each product link is a card; title + price come from its text.
           cardSelector: 'a[href*="/p/"]',

@@ -59,6 +59,14 @@ export const config = {
     executablePath: str('PLAYWRIGHT_EXECUTABLE_PATH', ''),
   },
 
+  // Debugging: when DEBUG_SCRAPE is on, a scrape that finds zero listings (and
+  // every scrape) dumps a screenshot + page HTML into `debugDir`, so blocked /
+  // captcha / empty / changed-markup pages can be inspected offline.
+  debug: {
+    scrape: bool('DEBUG_SCRAPE', false),
+    dir: str('DEBUG_DIR', 'debug'),
+  },
+
   fb: {
     userDataDir: str('FB_USER_DATA_DIR', '.fb-userdata'),
     location: str('FB_LOCATION', 'jakarta'),

@@ -56,7 +56,7 @@ async function scrapeFacebook(query: NormalizedQuery): Promise<RawListing[]> {
       origin: ORIGIN,
       source: 'facebook',
       defaultCondition: 'used',
-      waitForSelector: 'a[href*="/marketplace/item/"]',
+      waitForSelector: 'a[href*="/marketplace/item/"], [role="main"] a[href*="/marketplace/"]',
       extract: {
         cardSelector: 'a[href*="/marketplace/item/"]',
         // Keep the per-run cap small to be gentle on the account.

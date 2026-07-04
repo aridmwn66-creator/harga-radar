@@ -23,8 +23,11 @@ export function enabledSources(): Source[] {
   return ALL_SOURCES.filter((s) => s.enabled);
 }
 
-// Generous per-source budget: navigation timeout + polite delays + overhead.
-const SOURCE_TIMEOUT_MS = config.scraping.navTimeoutMs + 20_000;
+// Generous per-source budget: it must cover navigation retries (up to 3
+// attempts + backoff), the wait-for-selector, the lazy-load scroll, polite
+// delays, and extraction. Kept comfortably above the worst case; scraping is
+// cached, so a rare slow first request is acceptable.
+const SOURCE_TIMEOUT_MS = config.scraping.navTimeoutMs * 2 + 30_000;
 
 /**
  * Run every enabled source in parallel. Each source is fully isolated: a

@@ -7,13 +7,38 @@ import { createLogger } from '../lib/logger.js';
 
 const log = createLogger('browser');
 
+// A recent, realistic desktop Chrome UA. Matched by the sec-ch-ua hints below so
+// the two do not contradict each other (a common bot tell).
 const UA =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36';
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+
+// Headers a real Chrome from Indonesia would send. Accept-Language in particular
+// makes marketplaces serve the Indonesian site + prices; the client hints keep
+// the request consistent with the UA above.
+const EXTRA_HTTP_HEADERS: Record<string, string> = {
+  'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+  'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+  'sec-ch-ua-mobile': '?0',
+  'sec-ch-ua-platform': '"Windows"',
+};
+
+// Shared context options for every source, so the browser fingerprint is
+// consistent (UA + locale + timezone + headers + a common desktop viewport).
+const CONTEXT_OPTIONS = {
+  userAgent: UA,
+  locale: 'id-ID',
+  timezoneId: 'Asia/Jakarta',
+  viewport: { width: 1366, height: 900 },
+  extraHTTPHeaders: EXTRA_HTTP_HEADERS,
+} as const;
 
 const LAUNCH_ARGS = [
   '--no-sandbox',
   '--disable-dev-shm-usage',
   '--disable-blink-features=AutomationControlled',
+  // Work around net::ERR_HTTP2_PROTOCOL_ERROR seen on some sites (e.g. OLX) with
+  // headless Chromium. Forcing HTTP/1.1 is slower but far more reliable here.
+  '--disable-http2',
 ];
 
 function executablePath(): string | undefined {
@@ -63,12 +88,7 @@ async function configureContext(context: BrowserContext): Promise<void> {
 /** Run a scrape with a fresh, isolated page (used by the reliable sources). */
 export async function withPage<T>(fn: (page: Page) => Promise<T>): Promise<T> {
   const browser = await getBrowser();
-  const context = await browser.newContext({
-    userAgent: UA,
-    locale: 'id-ID',
-    timezoneId: 'Asia/Jakarta',
-    viewport: { width: 1280, height: 900 },
-  });
+  const context = await browser.newContext({ ...CONTEXT_OPTIONS });
   await configureContext(context);
   const page = await context.newPage();
   try {
@@ -92,10 +112,7 @@ export function getFacebookContext(headless = config.scraping.headless): Promise
         headless,
         args: LAUNCH_ARGS,
         executablePath: executablePath(),
-        userAgent: UA,
-        locale: 'id-ID',
-        timezoneId: 'Asia/Jakarta',
-        viewport: { width: 1280, height: 900 },
+        ...CONTEXT_OPTIONS,
       })
       .then(async (ctx) => {
         ctx.setDefaultNavigationTimeout(config.scraping.navTimeoutMs);

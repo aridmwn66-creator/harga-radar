@@ -81,6 +81,38 @@ card, extract title/link/image). If a marketplace changes its markup, a source
 degrades to fewer/no results rather than crashing. You may need to update the
 selectors in `src/sources/*.ts` over time.
 
+Reliability measures shared by every source:
+
+- A realistic desktop Chrome user-agent plus matching headers (Accept-Language
+  `id-ID`, `sec-ch-ua` client hints, Jakarta locale/timezone), so marketplaces
+  serve the Indonesian site and prices and are less likely to flag the request.
+- HTTP/2 is disabled at the browser level (`--disable-http2`) to work around the
+  intermittent `net::ERR_HTTP2_PROTOCOL_ERROR` some sites (notably OLX) throw at
+  headless Chromium.
+- Navigation is retried up to 3 times with exponential backoff.
+- Results are JS-rendered, so each scrape waits for a listing selector (with
+  fallbacks) and nudges lazy-loaded grids by scrolling before extracting.
+- Every scrape logs the HTTP status, whether the wait selector matched, the raw
+  count, and the final URL. A scrape that finds nothing additionally logs a
+  diagnosis (per-selector element counts, link/price-link counts, a detected
+  block/captcha/login hint, and a plain-language reason).
+
+### Debugging a source that returns nothing
+
+When a source keeps coming back empty, turn on debug mode:
+
+```
+DEBUG_SCRAPE=on   # in .env, then restart
+```
+
+With it on, every scrape saves a screenshot (`.png`) and the full page HTML
+(`.html`) into `DEBUG_DIR` (default `debug/`, git-ignored), named
+`<source>-<timestamp>`. Open them to see what the browser actually got: a
+captcha or login wall, an empty page (blocked), a results page with a different
+markup (update the selectors), or genuinely no listings for that model. The
+zero-result reason is logged even with debug mode off; the screenshot + HTML are
+what the flag adds.
+
 ## Normalization + aggregation
 
 - Model names are normalized to a `modelId` (e.g. "iphone 11", "ip 11",
@@ -123,8 +155,9 @@ concurrency 1 (a mutex), long randomized delays, and a small per-run cap.
 
 All configuration is via `.env` (see `.env.example`): port/host, log level,
 inbound rate limit, cache TTL + directory, source toggles, per-source listing
-cap, headless mode, navigation timeout, an optional Chromium path, and the
-Facebook profile dir + location.
+cap, headless mode, navigation timeout, an optional Chromium path, the debug
+scrape flag + directory (`DEBUG_SCRAPE` / `DEBUG_DIR`), and the Facebook profile
+dir + location.
 
 ## Operational notes
 

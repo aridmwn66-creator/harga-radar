@@ -28,7 +28,9 @@ export const olxSource: Source = {
         origin: ORIGIN,
         source: 'olx',
         defaultCondition: 'used',
-        waitForSelector: '[data-aut-id="itemBox"]',
+        // Wait for the item grid OR any listing link, so a data-aut-id change
+        // does not stall the wait (the heuristic fallback still extracts).
+        waitForSelector: '[data-aut-id="itemBox"], a[href*="/item/"]',
         extract: {
           cardSelector: '[data-aut-id="itemBox"]',
           titleSelector: '[data-aut-id="itemTitle"]',

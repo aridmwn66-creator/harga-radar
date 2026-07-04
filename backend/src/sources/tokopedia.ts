@@ -29,7 +29,8 @@ export const tokopediaSource: Source = {
         source: 'tokopedia',
         // Mostly shops selling new units.
         defaultCondition: 'new',
-        waitForSelector: '[data-testid="divProductWrapper"]',
+        waitForSelector:
+          '[data-testid="divProductWrapper"], [data-testid="master-product-card"], a[href*="/product/"]',
         extract: {
           cardSelector: '[data-testid="divProductWrapper"]',
           titleSelector: '[data-testid="linkProductName"]',

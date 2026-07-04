@@ -28,7 +28,7 @@ export const shopeeSource: Source = {
         origin: ORIGIN,
         source: 'shopee',
         defaultCondition: 'new',
-        waitForSelector: '[data-sqe="item"]',
+        waitForSelector: '[data-sqe="item"], .shopee-search-item-result__item, a[href*="-i."]',
         extract: {
           cardSelector: '[data-sqe="item"]',
           linkSelector: 'a',
