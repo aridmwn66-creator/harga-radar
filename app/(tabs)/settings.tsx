@@ -52,8 +52,9 @@ export default function SettingsScreen() {
           </AppText>
           {dataSource === 'live' && !liveConfigured ? (
             <View style={styles.warn}>
-              <AppText variant="caption" color="down">
-                EXPO_PUBLIC_API_URL belum di-set. Data live tidak akan termuat.
+              <AppText variant="caption" color="cyan">
+                EXPO_PUBLIC_API_URL belum di-set, jadi sementara tetap pakai data
+                contoh biar app tidak error.
               </AppText>
             </View>
           ) : null}

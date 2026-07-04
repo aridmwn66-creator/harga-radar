@@ -371,10 +371,18 @@ export default function ReportScreen() {
   if (query.isError && !report) {
     return (
       <SafeAreaView edges={['top']} style={styles.safe}>
+        <TechBackground />
         <View style={styles.headerContent}>
           <ScreenHeader eyebrow={model?.brand ?? 'Model'} title={modelName} onBack={() => router.back()} />
         </View>
-        <ErrorState onRetry={() => query.refetch()} />
+        <ErrorState
+          onRetry={() => {
+            // Re-run both queries. refetch() re-invokes the query function and
+            // clears the error state on success.
+            query.refetch();
+            universe.refetch();
+          }}
+        />
       </SafeAreaView>
     );
   }

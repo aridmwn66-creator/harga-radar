@@ -1,4 +1,5 @@
 import type {
+  Listing,
   ModelSummary,
   PriceProvider,
   PriceReport,
@@ -13,10 +14,12 @@ import { MODELS, getModel } from './fixtures/models';
 // aggregation the real backend would, and simulates a little latency so the
 // loading skeletons are visible on first launch.
 
+// A fixed, deterministic delay so the loading skeleton is briefly visible.
+// It NEVER rejects: the data is bundled locally, so a request must always
+// succeed (no random / network-style failures).
 function delay<T>(value: T, ms = MOCK_LATENCY_MS): Promise<T> {
   return new Promise((resolve) => {
-    const jitter = ms * (0.6 + Math.random() * 0.8);
-    setTimeout(() => resolve(value), jitter);
+    setTimeout(() => resolve(value), ms);
   });
 }
 
@@ -76,15 +79,23 @@ export const mockProvider: PriceProvider = {
     const { modelId, storageGb, condition, location } = params;
     const model = getModel(modelId);
 
-    const listings = LISTINGS.filter((l) => {
-      if (l.modelId !== modelId) return false;
-      if (storageGb != null && l.storageGb !== storageGb) return false;
-      if (condition != null && l.condition !== condition) return false;
-      if (location != null && location.length > 0) {
-        if (!l.location.toLowerCase().includes(location.toLowerCase())) return false;
-      }
-      return true;
-    }).sort((a, b) => a.priceIdr - b.priceIdr);
+    // Defensive: building a report from local data cannot really throw, but we
+    // guarantee a valid report is always returned (an empty one at worst, shown
+    // as an empty state) so the screen never lands on an error.
+    let listings: Listing[] = [];
+    try {
+      listings = LISTINGS.filter((l) => {
+        if (l.modelId !== modelId) return false;
+        if (storageGb != null && l.storageGb !== storageGb) return false;
+        if (condition != null && l.condition !== condition) return false;
+        if (location != null && location.length > 0) {
+          if (!l.location.toLowerCase().includes(location.toLowerCase())) return false;
+        }
+        return true;
+      }).sort((a, b) => a.priceIdr - b.priceIdr);
+    } catch {
+      listings = [];
+    }
 
     const report: PriceReport = {
       modelId,
