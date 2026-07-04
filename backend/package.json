@@ -1,0 +1,31 @@
+{
+  "name": "hargaradar-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Price aggregation service for HargaRadar. Scrapes Indonesian marketplaces for phone prices and exposes them to the app.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "fb-login": "tsx src/scripts/fb-login.ts",
+    "test:normalize": "tsx src/scripts/test-normalize.ts",
+    "postinstall-note": "echo 'Run: npx playwright install chromium'"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.1",
+    "@fastify/rate-limit": "^10.1.1",
+    "fastify": "^5.1.0",
+    "playwright": "^1.55.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.3"
+  }
+}

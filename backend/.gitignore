@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.cache/
+.fb-userdata/
+*.log
+.env
+.DS_Store
