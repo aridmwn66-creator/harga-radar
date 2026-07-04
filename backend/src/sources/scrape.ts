@@ -11,6 +11,8 @@ const log = createLogger('scrape');
 
 // How long to wait for JS-rendered results to appear before extracting anyway.
 const WAIT_SELECTOR_TIMEOUT_MS = 12_000;
+// How long to wait for actual price content (not just the DOM shell) to render.
+const WAIT_CONTENT_TIMEOUT_MS = 8_000;
 // Navigation retries with exponential backoff (helps flaky connections and the
 // intermittent net::ERR_HTTP2_PROTOCOL_ERROR class of failures).
 const NAV_ATTEMPTS = 3;
@@ -92,6 +94,32 @@ function extractCards(cfg: ExtractConfig): RawCard[] {
     out.push({ title, priceText, url, location, imageUrl, timeText });
   };
 
+  // Only a node's OWN text (not descendants'), so a huge parent that merely
+  // contains a price deep inside is not mistaken for a price element.
+  const directText = (el: Element): string => {
+    let s = '';
+    el.childNodes.forEach((node) => {
+      if (node.nodeType === 3) s += node.textContent ?? '';
+    });
+    return s;
+  };
+  const priceReG = /Rp\s?[\d.,]+/gi;
+  const countPrices = (el: Element): number =>
+    (((el as HTMLElement).innerText || '').match(priceReG) ?? []).length;
+  // From a price node, climb to the smallest ancestor that still describes a
+  // single product (stop before it swallows a second price), preferring one
+  // that has both a link and an image (a full card).
+  const climbToCard = (start: Element): Element => {
+    let el: Element = start;
+    for (let i = 0; i < 8; i += 1) {
+      const parent: Element | null = el.parentElement;
+      if (!parent || countPrices(parent) > 1) break;
+      el = parent;
+      if (el.querySelector('a[href]') && el.querySelector('img')) break;
+    }
+    return el;
+  };
+
   const seen = new Set<string>();
   const out: RawCard[] = [];
 
@@ -99,10 +127,24 @@ function extractCards(cfg: ExtractConfig): RawCard[] {
     ? Array.from(document.querySelectorAll(cfg.cardSelector))
     : [];
   if (cards.length === 0) {
-    // Heuristic fallback: any anchor whose text contains a price.
+    // Fallback A: any anchor whose own text already contains a price.
     cards = Array.from(document.querySelectorAll('a[href]')).filter((a) =>
       priceRe.test((a as HTMLElement).innerText || ''),
     );
+  }
+  if (cards.length === 0) {
+    // Fallback B: anchor on the price text itself and climb to the enclosing
+    // card. Handles sites (e.g. Tokopedia) where the price sits in a nested
+    // element and is NOT directly inside the product link, so data-testid
+    // guesses and anchor-only matching both miss it.
+    const priceNodes = Array.from(
+      document.querySelectorAll('span, p, div, strong, b, h1, h2, h3'),
+    ).filter((el) => priceRe.test(directText(el)));
+    const containers = new Set<Element>();
+    for (const node of priceNodes) {
+      containers.add(node.closest('a[href]') ?? climbToCard(node));
+    }
+    cards = Array.from(containers);
   }
   for (const c of cards) {
     if (out.length >= cfg.limit) break;
@@ -296,6 +338,20 @@ export async function scrapeSearch(opts: ScrapeOptions): Promise<RawListing[]> {
       .then(() => true)
       .catch(() => false);
   }
+
+  // Wait for actual price content to render (not just the DOM shell). This is
+  // what makes JS-heavy sites like Tokopedia yield results instead of an empty
+  // scrape; it no-ops quickly for pages that already have prices, and simply
+  // times out (then we extract anyway) for blocked/empty pages.
+  await page
+    .waitForFunction(
+      () => {
+        const t = document.body ? (document.body as HTMLElement).innerText : '';
+        return (t.match(/Rp\s?\d/gi) ?? []).length >= 3;
+      },
+      { timeout: WAIT_CONTENT_TIMEOUT_MS },
+    )
+    .catch(() => {});
 
   // Nudge lazy-loaded grids into rendering, then let results settle politely.
   await page.evaluate(lazyLoadScroll).catch(() => {});

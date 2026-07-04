@@ -10,6 +10,13 @@ import { scrapeSearch } from './scrape.js';
 // listings are shops selling NEW units, which makes this useful mainly as a
 // "harga baru" (new price) baseline rather than for used prices. Fails
 // gracefully if blocked. Respect Tokopedia's ToS and keep volume low.
+//
+// Tokopedia rewrites its data-testid markup frequently (the old
+// divProductWrapper / linkProductName / linkProductPrice attributes now match
+// nothing). Rather than chase specific attributes, we let the shared extractor
+// find product cards by their "Rp" price text and enclosing product link, which
+// survives markup churn. scrapeSearch also waits for real price content to
+// render before parsing, so the JS grid is actually loaded first.
 // ===========================================================================
 
 const ORIGIN = 'https://www.tokopedia.com';
@@ -29,14 +36,13 @@ export const tokopediaSource: Source = {
         source: 'tokopedia',
         // Mostly shops selling new units.
         defaultCondition: 'new',
-        waitForSelector:
-          '[data-testid="divProductWrapper"], [data-testid="master-product-card"], a[href*="/product/"]',
+        // Wait for a product tile to render; the price-content wait in
+        // scrapeSearch is the real gate before extraction.
+        waitForSelector: '[data-testid="divProductWrapper"], a[href] img',
         extract: {
-          cardSelector: '[data-testid="divProductWrapper"]',
-          titleSelector: '[data-testid="linkProductName"]',
-          priceSelector: '[data-testid="linkProductPrice"]',
-          linkSelector: 'a',
-          imageSelector: 'img',
+          // No fragile card/title/price selectors: the price-anchored heuristic
+          // (find "Rp ...", climb to the product card) does the extraction, with
+          // pickTitle reading the product name from the image alt / longest line.
           limit: query.limit,
         },
       }),

@@ -4,12 +4,24 @@ import { withPage } from '../browser/browser.js';
 import { scrapeSearch } from './scrape.js';
 
 // ===========================================================================
-// SHOPEE SOURCE  (EXPERIMENTAL, DISABLED BY DEFAULT)
+// SHOPEE SOURCE  (EXPERIMENTAL, DISABLED BY DEFAULT - KEEP OFF)
 // ---------------------------------------------------------------------------
-// Aggressive anti-bot (often a captcha / login wall). Treat results as
-// best-effort. Like Tokopedia, most listings are shops selling NEW units, so
-// this is useful mainly as a "harga baru" baseline. Fails gracefully if
-// blocked. Respect Shopee's ToS and keep volume low.
+// Shopee blocks headless scraping outright. From a plain server IP it returns
+// an empty page (no anchors, no products), so this source realistically needs a
+// residential/mobile PROXY or a paid scraping API to work at all. Without one it
+// will simply find zero listings and log "empty page ... likely blocked".
+//
+// This source is kept in the codebase for completeness and for anyone who DOES
+// have a proxy, but it is recommended to leave SOURCE_SHOPEE=off unless you have
+// that infrastructure. It fails gracefully and in isolation either way: a
+// blocked run returns [] (and, at worst, a navigation error caught by the
+// registry), and never affects the other sources.
+//
+// To use it with a proxy, point PLAYWRIGHT_EXECUTABLE_PATH / your own launch
+// setup at a proxied Chromium, or route this backend through an upstream proxy.
+//
+// Like Tokopedia, most Shopee listings are shops selling NEW units, so this is
+// only ever a "harga baru" baseline. Respect Shopee's ToS and keep volume low.
 // ===========================================================================
 
 const ORIGIN = 'https://shopee.co.id';

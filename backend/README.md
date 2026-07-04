@@ -59,8 +59,8 @@ or partial) report.
 | OLX        | on      | reliable     | Primary source for used phones. |
 | Carousell  | on      | reliable     | Secondary source for used phones. |
 | Facebook   | off     | experimental | Fragile, needs manual login, breaks ToS. See warnings. |
-| Tokopedia  | off     | experimental | Heavy JS + anti-bot. Mostly NEW units (harga baru baseline). |
-| Shopee     | off     | experimental | Aggressive anti-bot. Mostly NEW units (harga baru baseline). |
+| Tokopedia  | off     | experimental | Heavy JS. Extracted by price + product link (no fragile data-testid). Mostly NEW units (harga baru baseline). |
+| Shopee     | off     | experimental | Blocks headless scraping. Needs a proxy / paid scraping API. Keep OFF unless you have one. |
 
 Turn sources on/off in `.env` (then restart):
 
@@ -74,6 +74,17 @@ SOURCE_SHOPEE=off
 
 Default: only the reliable used-phone sources (OLX + Carousell) are on. Turn on
 the experimental ones manually when you are ready.
+
+Notes on the experimental sources:
+
+- Tokopedia rewrites its `data-testid` markup often, so this source does not
+  hard-code those attributes. It finds product cards by their "Rp" price text
+  and the enclosing product link, and waits for that price content to render
+  before parsing. That survives markup churn but is still best-effort.
+- Shopee blocks headless scraping from a plain server IP (you get an empty page
+  and zero listings). It realistically needs a residential/mobile proxy or a
+  paid scraping API to return anything. Leave `SOURCE_SHOPEE=off` unless you
+  have that infrastructure; it fails gracefully (empty result) either way.
 
 Note on the scrapers: each source targets best-effort CSS selectors first, then
 falls back to a price-anchored heuristic (find the price text, walk up to the

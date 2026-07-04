@@ -48,11 +48,29 @@ const carousellHtml = `<html><body><main>
   ${crCard('iPhone 11 256GB bekas', 'Rp 4.500.000')}
 </main></body></html>`;
 
+// A Tokopedia-style page: NO usable data-testid, and crucially the price sits in
+// a sibling element OUTSIDE the product link, so anchor-only matching misses it.
+// This exercises the price-node-climb fallback (fallback B) that the Tokopedia
+// fix relies on.
+function tkCard(title: string, price: string): string {
+  return `<div class="css-card">
+    <a href="/tokoseller/${encodeURIComponent(title)}"><img alt="${title}" src="/i.jpg"/></a>
+    <div class="css-name">${title}</div>
+    <div class="css-price">${price}</div>
+  </div>`;
+}
+const tokopediaHtml = `<html><body><div id="grid">
+  ${tkCard('Apple iPhone 11 128GB Garansi Resmi iBox', 'Rp5.999.000')}
+  ${tkCard('iPhone 11 64GB New Segel', 'Rp5.499.000')}
+  ${tkCard('iPhone 11 256GB BNIB Resmi', 'Rp6.499.000')}
+</div></body></html>`;
+
 async function main(): Promise<void> {
   const server = http.createServer((req, res) => {
     res.setHeader('content-type', 'text/html');
     if (req.url?.startsWith('/olx')) res.end(olxHtml);
     else if (req.url?.startsWith('/carousell')) res.end(carousellHtml);
+    else if (req.url?.startsWith('/tokopedia')) res.end(tokopediaHtml);
     else res.end('<html><body>not found</body></html>');
   });
   await new Promise<void>((r) => server.listen(0, r));
@@ -97,13 +115,30 @@ async function main(): Promise<void> {
       extract: { cardSelector: 'a[href*="/p/"]', limit: 40 },
     }),
   );
+  // Tokopedia: no cardSelector at all, price outside the link -> fallback B.
+  const tkRaw = await withPage((page) =>
+    scrapeSearch({
+      page,
+      url: `${origin}/tokopedia`,
+      origin,
+      source: 'tokopedia',
+      defaultCondition: 'new',
+      extract: { limit: 40 },
+    }),
+  );
 
-  console.log(`olx raw: ${olxRaw.length}, carousell raw: ${crRaw.length}`);
+  console.log(`olx raw: ${olxRaw.length}, carousell raw: ${crRaw.length}, tokopedia raw: ${tkRaw.length}`);
   check('olx extracted cards', olxRaw.length >= 6);
   check('carousell extracted cards', crRaw.length >= 3);
   check('olx price parsed', olxRaw.some((r) => r.priceIdr === 3_850_000));
   check('olx location parsed', olxRaw.some((r) => r.location === 'Jakarta Selatan'));
   check('olx image absolute url', olxRaw.some((r) => (r.imageUrl ?? '').startsWith('http')));
+  // The Tokopedia fix: cards found via nested price + climb, title from img alt,
+  // link recovered from the sibling anchor.
+  check('tokopedia extracted cards (nested price)', tkRaw.length >= 3);
+  check('tokopedia nested price parsed', tkRaw.some((r) => r.priceIdr === 5_999_000));
+  check('tokopedia title recovered', tkRaw.some((r) => /iphone 11/i.test(r.title)));
+  check('tokopedia link recovered', tkRaw.some((r) => r.url.includes('/tokoseller/')));
 
   const runs: SourceRun[] = [
     { source: 'olx', ok: true, durationMs: 1, listings: olxRaw },
