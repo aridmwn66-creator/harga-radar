@@ -25,9 +25,17 @@ if (html.includes('id="hargaradar-web"')) {
   process.exit(0);
 }
 
+// Grayscale antialiasing (matching the native app) renders text as crisp, solid
+// strokes on the dark theme, instead of the browser default subpixel AA which
+// fringes and reads as thin/fuzzy. font-synthesis:none forbids faux bold. These
+// are inherited, so declaring them on <html> covers everything.
 const inject =
   '    <meta name="theme-color" content="#0A0B0D" />\n' +
-  '    <style id="hargaradar-web">html,body,#root{background-color:#0A0B0D;}body{overscroll-behavior:none;}</style>\n' +
+  '    <style id="hargaradar-web">' +
+  'html,body,#root{background-color:#0A0B0D;}' +
+  'html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-synthesis:none;}' +
+  'body{overscroll-behavior:none;}' +
+  '</style>\n' +
   '  </head>';
 
 html = html.replace('</head>', inject);

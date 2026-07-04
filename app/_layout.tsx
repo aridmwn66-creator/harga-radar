@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Platform, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -39,7 +39,12 @@ export default function RootLayout() {
   });
   const hasHydrated = useSettingsStore((s) => s.hasHydrated);
 
-  const ready = (fontsLoaded || !!fontError) && hasHydrated;
+  // On web, wait for EVERY weight to be fully loaded before the app paints, so no
+  // screen ever renders a title/price in a thin fallback font first (FOUT). On
+  // native this is already true from `useFonts`, so it starts true.
+  const [webFontsReady, setWebFontsReady] = useState(Platform.OS !== 'web');
+
+  const ready = (fontsLoaded || !!fontError) && hasHydrated && webFontsReady;
 
   useEffect(() => {
     if (ready) {
@@ -47,15 +52,35 @@ export default function RootLayout() {
     }
   }, [ready]);
 
-  // Web: eagerly load every registered font face (some weights are otherwise
-  // fetched lazily on first use, causing a brief fallback-font flash on the
-  // screen that first needs them). Native ignores this (no document.fonts).
+  // Web: force-load every registered font face (some weights are otherwise
+  // fetched lazily on first use) and wait for them all to settle before marking
+  // fonts ready. Native ignores this (no document.fonts).
   useEffect(() => {
-    if (Platform.OS !== 'web' || typeof document === 'undefined' || !document.fonts) return;
+    if (Platform.OS !== 'web') return;
+    if (fontError) {
+      setWebFontsReady(true);
+      return;
+    }
+    if (!fontsLoaded) return; // wait until useFonts has registered the faces
+    if (typeof document === 'undefined' || !document.fonts) {
+      setWebFontsReady(true);
+      return;
+    }
+    let cancelled = false;
+    const pending: Promise<unknown>[] = [];
     document.fonts.forEach((face) => {
-      if (face.status === 'unloaded') face.load().catch(() => {});
+      if (face.status !== 'loaded') pending.push(face.load().catch(() => undefined));
     });
-  }, [fontsLoaded]);
+    Promise.all(pending)
+      .then(() => document.fonts.ready)
+      .catch(() => undefined)
+      .finally(() => {
+        if (!cancelled) setWebFontsReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [fontsLoaded, fontError]);
 
   // Paint the themed dark background while fonts + persisted state load, so web
   // never flashes a white screen or the wrong (fallback) font before the app is
