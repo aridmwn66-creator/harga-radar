@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontFamily: fonts.displayMedium,
     fontSize: 17,
-    letterSpacing: -0.2,
+    letterSpacing: -0.1,
     padding: 0,
   },
 });

@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontFamily: fonts.displayBold,
     fontSize: 28,
-    letterSpacing: -0.5,
+    letterSpacing: -0.25,
     padding: 0,
   },
   actions: {

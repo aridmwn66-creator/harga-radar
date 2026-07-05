@@ -85,10 +85,9 @@ The web build is tuned to look like the phone app, not a stretched desktop page:
   web-only (`Hero3D.web.tsx`), performance-guarded (capped pixel ratio, paused
   when the tab is hidden), a single static frame under `prefers-reduced-motion`,
   and a no-op on native. `three` is therefore never bundled for Expo Go.
-- Typography matches native. Every weight (Space Grotesk 500/600/700, Inter
-  400/500/600) is registered as its own face and the web app does not paint until
-  all of them are fully loaded, so titles and prices never flash a thin fallback
-  font (FOUT). Text uses grayscale antialiasing (`-webkit-font-smoothing`) with
+- Typography matches native. Every Inter weight (400/500/600/700) is registered
+  as its own face and the web app does not paint until all of them are fully
+  loaded, so titles and prices never flash a thin fallback font (FOUT). Text uses grayscale antialiasing (`-webkit-font-smoothing`) with
   `font-synthesis: none`, so on the dark theme the bold weights render as crisp,
   solid strokes (like the phone), not fuzzy subpixel-fringed ones.
 - The odometer, market-band draw-in, and content entrances animate smoothly on
@@ -203,7 +202,8 @@ isolated so it can be swapped back in a development build:
   `src/store/storage.ts`.
 
 Everything else follows the spec: Expo Router, Zustand, TanStack Query,
-Reanimated, expo-haptics, Space Grotesk + Inter, and the exact color tokens.
+Reanimated, expo-haptics, and the color tokens. The typeface is Inter across
+the whole app (all text and all numbers, with tabular figures for prices).
 
 ## Notes
 

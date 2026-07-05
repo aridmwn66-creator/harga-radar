@@ -7,14 +7,14 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
-// Per-weight subpath imports so Metro bundles only the 6 fonts we use, instead
-// of every weight in the family (the barrel import pulls them all).
-import { SpaceGrotesk_500Medium } from '@expo-google-fonts/space-grotesk/500Medium';
-import { SpaceGrotesk_600SemiBold } from '@expo-google-fonts/space-grotesk/600SemiBold';
-import { SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk/700Bold';
+// Per-weight subpath imports so Metro bundles only the 4 fonts we use, instead
+// of every weight in the family (the barrel import pulls them all). The whole
+// app is set in Inter: body text and display/numbers alike (Inter's tabular
+// figures keep price columns aligned).
 import { Inter_400Regular } from '@expo-google-fonts/inter/400Regular';
 import { Inter_500Medium } from '@expo-google-fonts/inter/500Medium';
 import { Inter_600SemiBold } from '@expo-google-fonts/inter/600SemiBold';
+import { Inter_700Bold } from '@expo-google-fonts/inter/700Bold';
 import { colors, durations } from '@/theme';
 import { queryClient } from '@/query/client';
 import { useSettingsStore } from '@/store/settings';
@@ -30,12 +30,10 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
-    SpaceGrotesk_500Medium,
-    SpaceGrotesk_600SemiBold,
-    SpaceGrotesk_700Bold,
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,
+    Inter_700Bold,
   });
   const hasHydrated = useSettingsStore((s) => s.hasHydrated);
 
